@@ -78,6 +78,9 @@ public class ChessPiece {
         if(pieceType == PieceType.BISHOP){
             return bishopMoves(board,myPosition);
         }
+        if(pieceType == PieceType.KING){
+            return kingMoves(board,myPosition);
+        }
         return null;
     }
 
@@ -152,7 +155,7 @@ public class ChessPiece {
         ChessGame.TeamColor color = currPiece.color;
         for(int i = -1; i < 2; i++){
             for(int j = -1; j < 2; j++){
-                ChessPosition newPosition = new ChessPosition(row + i, col + i);
+                ChessPosition newPosition = new ChessPosition(row + i, col + j);
                 if (validatePosition(board, newPosition, color)) {
                     ChessMove newMove = new ChessMove(myPosition, newPosition, null);
                     kingMoves.add(newMove);
