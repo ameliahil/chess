@@ -218,6 +218,29 @@ public class ChessPiece {
         return knightMoves;
     }
 
+    private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition){
+        Collection<ChessMove> pawnMoves;
+        pawnMoves = new HashSet<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        ChessPiece currPiece = board.getPiece(myPosition);
+        ChessGame.TeamColor color = currPiece.color;
+        for(int i = 1; i < 8; i++) {
+            ChessPosition newPosition = new ChessPosition(row + i, col + i);
+            if (validatePosition(board, newPosition, color)) {
+                ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                pawnMoves.add(newMove);
+                if (board.getPiece(newPosition) != null) {
+                    break;
+                }
+            }
+            else{
+                break;
+            }
+        }
+        return pawnMoves;
+    }
+
     private boolean validatePosition(ChessBoard board, ChessPosition newPosition, ChessGame.TeamColor oldColor){
         int row = newPosition.getRow();
         int col = newPosition.getColumn();
