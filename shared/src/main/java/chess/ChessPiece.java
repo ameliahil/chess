@@ -225,18 +225,26 @@ public class ChessPiece {
         int col = myPosition.getColumn();
         ChessPiece currPiece = board.getPiece(myPosition);
         ChessGame.TeamColor color = currPiece.color;
-        for(int i = 1; i < 8; i++) {
-            ChessPosition newPosition = new ChessPosition(row + i, col + i);
-            if (validatePosition(board, newPosition, color)) {
-                ChessMove newMove = new ChessMove(myPosition, newPosition, null);
-                pawnMoves.add(newMove);
-                if (board.getPiece(newPosition) != null) {
+        if((color == TeamColor.WHITE && row == 2) || (color == TeamColor.BLACK && row == 7)){
+            for(int i = 1; i < 3; i++) {
+                if (color == TeamColor.WHITE) {
+                    ChessPosition newPosition = new ChessPosition(row + i, col);
+                }
+                if (color == TeamColor.BLACK) {
+                    ChessPosition newPosition = new ChessPosition(row - i, col);
+                }
+                if (validatePosition(board, newPosition, color)) {
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    pawnMoves.add(newMove);
+                    if (board.getPiece(newPosition) != null) {
+                        break;
+                    }
+                } else {
                     break;
                 }
             }
-            else{
-                break;
-            }
+        }
+
         }
         return pawnMoves;
     }
