@@ -81,6 +81,9 @@ public class ChessPiece {
         if(pieceType == PieceType.KING){
             return kingMoves(board,myPosition);
         }
+        if(pieceType == PieceType.KNIGHT){
+            return knightMoves(board,myPosition);
+        }
         return null;
     }
 
@@ -163,6 +166,56 @@ public class ChessPiece {
             }
         }
         return kingMoves;
+    }
+
+    private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition){
+        Collection<ChessMove> knightMoves;
+        knightMoves = new HashSet<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        ChessPiece currPiece = board.getPiece(myPosition);
+        ChessGame.TeamColor color = currPiece.color;
+        ChessPosition newPosition = new ChessPosition(row - 1 , col - 2 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        newPosition = new ChessPosition(row - 2 , col - 1 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        newPosition = new ChessPosition(row - 2 , col + 1 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        newPosition = new ChessPosition(row - 1 , col + 2 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        newPosition = new ChessPosition(row + 1 , col + 2 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        newPosition = new ChessPosition(row + 2 , col + 1 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        newPosition = new ChessPosition(row + 2 , col - 1 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        newPosition = new ChessPosition(row + 1 , col - 2 );
+        if (validatePosition(board, newPosition, color)) {
+            ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+            knightMoves.add(newMove);
+        }
+        return knightMoves;
     }
 
     private boolean validatePosition(ChessBoard board, ChessPosition newPosition, ChessGame.TeamColor oldColor){
