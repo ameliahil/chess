@@ -18,7 +18,6 @@ public class ChessPiece {
         this.type = type;
         this.color = pieceColor;
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -83,6 +82,9 @@ public class ChessPiece {
         }
         if(pieceType == PieceType.KNIGHT){
             return knightMoves(board,myPosition);
+        }
+        if(pieceType == PieceType.PAWN){
+            return pawnMoves(board,myPosition);
         }
         return null;
     }
@@ -168,6 +170,7 @@ public class ChessPiece {
         return kingMoves;
     }
 
+
     private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition){
         Collection<ChessMove> knightMoves;
         knightMoves = new HashSet<>();
@@ -218,34 +221,49 @@ public class ChessPiece {
         return knightMoves;
     }
 
-    private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition){
+    private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> pawnMoves;
         pawnMoves = new HashSet<>();
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         ChessPiece currPiece = board.getPiece(myPosition);
         ChessGame.TeamColor color = currPiece.color;
-        if((color == TeamColor.WHITE && row == 2) || (color == TeamColor.BLACK && row == 7)){
+
+        if((color == ChessGame.TeamColor.WHITE && row == 2) || (color == ChessGame.TeamColor.BLACK && row == 7)){
             for(int i = 1; i < 3; i++) {
-                if (color == TeamColor.WHITE) {
-                    ChessPosition newPosition = new ChessPosition(row + i, col);
+                ChessPosition newPosition = new ChessPosition(0,0);
+                if (color == ChessGame.TeamColor.WHITE) {
+                    newPosition = new ChessPosition(row + i, col);
                 }
-                if (color == TeamColor.BLACK) {
-                    ChessPosition newPosition = new ChessPosition(row - i, col);
+                if (color == ChessGame.TeamColor.BLACK) {
+                    newPosition = new ChessPosition(row - i, col);
                 }
-                if (validatePosition(board, newPosition, color)) {
+                if (validatePosition(board, newPosition, color) && board.getPiece(newPosition) == null) {
                     ChessMove newMove = new ChessMove(myPosition, newPosition, null);
                     pawnMoves.add(newMove);
                     if (board.getPiece(newPosition) != null) {
                         break;
                     }
-                } else {
+                }
+                else {
                     break;
                 }
             }
         }
-
+        else{
+            ChessPosition newPosition = new ChessPosition(0,0);
+            if (color == ChessGame.TeamColor.WHITE) {
+                newPosition = new ChessPosition(row + 1, col);
+            }
+            if (color == ChessGame.TeamColor.BLACK) {
+                newPosition = new ChessPosition(row - 1, col);
+            }
+            if (validatePosition(board, newPosition, color) && board.getPiece(newPosition) == null) {
+                ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                pawnMoves.add(newMove);
+            }
         }
+
         return pawnMoves;
     }
 
@@ -267,4 +285,7 @@ public class ChessPiece {
         }
         return true;
     }
+
+
+
 }
