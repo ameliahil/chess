@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -47,7 +48,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> moves = new HashSet<>();
+
+        return moves;
     }
 
     /**
@@ -60,6 +63,7 @@ public class ChessGame {
         ChessPiece piece = chessBoard.getPiece(move.getStartPosition());
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
         ChessPiece.PieceType promotion = move.getPromotionPiece();
+        boolean madeMove = false;
         for(ChessMove myMove : validMoves){
             if (myMove == move){
                 if(promotion != null){
@@ -67,9 +71,25 @@ public class ChessGame {
                 }
                 chessBoard.addPiece(move.getStartPosition(),null);
                 chessBoard.addPiece(move.getEndPosition(),piece);
+                madeMove = true;
+                break;
             }
         }
-        throw new InvalidMoveException("Invalid Move");
+        if(madeMove){
+            swapTeamColor();
+        }
+        else {
+            throw new InvalidMoveException("Invalid Move");
+        }
+    }
+
+    private void swapTeamColor(){
+        if(currTurn == TeamColor.BLACK){
+            currTurn = TeamColor.WHITE;
+        }
+        if(currTurn == TeamColor.WHITE){
+            currTurn = TeamColor.BLACK;
+        }
     }
 
     /**
@@ -101,7 +121,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         return false;
-        //maybe make function that returns a list of positions of all pieces of one color
+
     }
 
     /**
@@ -124,6 +144,28 @@ public class ChessGame {
 
     private boolean putsKingInDanger(ChessMove move, ChessBoard board, TeamColor color){
         ChessPosition kingPosition = findKing(board,color);
+        TeamColor otherTeamColor;
+        ChessBoard hypotheticalBoard = chessBoard;
+        ChessPiece.PieceType promotion = move.getPromotionPiece();
+        ChessPiece piece = hypotheticalBoard.getPiece(move.getStartPosition());
+        if(color == TeamColor.WHITE){
+            otherTeamColor = TeamColor.BLACK;
+        }
+        else{
+            otherTeamColor = TeamColor.WHITE;
+        }
+
+        if(promotion != null){
+            piece = new ChessPiece(piece.getTeamColor(),promotion);
+        }
+        hypotheticalBoard.addPiece(move.getStartPosition(),null);
+        hypotheticalBoard.addPiece(move.getEndPosition(),piece);
+
+        Collection<ChessPosition> positions = currPositions(hypotheticalBoard,otherTeamColor);
+        Collection<ChessPosition> allPositions
+        for(ChessPosition position : positions){
+
+        }
         return false;
     }
 
@@ -153,5 +195,24 @@ public class ChessGame {
             }
         }
         return null;
+    }
+
+    private Collection<ChessPosition> currPositions(ChessBoard board, TeamColor color){
+        Collection<ChessPosition> positions = new HashSet<>();
+        ChessPosition currPosition;
+        ChessPiece currPiece;
+        for(int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                currPosition = new ChessPosition(i,j);
+                currPiece = board.getPiece(currPosition);
+                if(currPiece == null){
+                    continue;
+                }
+                if(currPiece.getTeamColor() == color){
+                    positions.add(currPosition);
+                }
+            }
+        }
+        return positions;
     }
 }
