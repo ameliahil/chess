@@ -48,8 +48,13 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        Collection<ChessMove> moves = new HashSet<>();
+        if(startPosition == null){
+            return null;
+        }
+        Collection<ChessMove> moves =
+        TeamColor color = chessBoard.getPiece(startPosition).getTeamColor();
 
+        moves.addAll()
         return moves;
     }
 
