@@ -162,9 +162,14 @@ public class ChessGame {
         hypotheticalBoard.addPiece(move.getEndPosition(),piece);
 
         Collection<ChessPosition> positions = currPositions(hypotheticalBoard,otherTeamColor);
-        Collection<ChessPosition> allPositions
+        Collection<ChessMove> allPossibleMoves = new HashSet<>();
         for(ChessPosition position : positions){
-
+            allPossibleMoves.addAll(validMoves(position));
+        }
+        for(ChessMove currMove : allPossibleMoves){
+            if(currMove.getEndPosition() == kingPosition){
+                return true;
+            }
         }
         return false;
     }
