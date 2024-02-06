@@ -35,6 +35,23 @@ public class ChessBoard {
         return squares[position.getRow() - 1][position.getColumn() - 1];
     }
 
+    public ChessBoard copyBoard(ChessBoard chessBoard){
+        ChessBoard newBoard = new ChessBoard();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                ChessPiece oldPiece = squares[i][j];
+                if(oldPiece != null){
+                    ChessPiece newPiece = new ChessPiece(oldPiece.getTeamColor(), oldPiece.getPieceType());
+                    newBoard.squares[i][j] = newPiece;
+                }
+                else{
+                    newBoard.squares[i][j] = null;
+                }
+            }
+        }
+        return newBoard;
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)

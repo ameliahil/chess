@@ -2,6 +2,8 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -12,6 +14,7 @@ import java.util.HashSet;
 public class ChessGame {
     private ChessBoard chessBoard = null;
     private TeamColor currTurn = null;
+
     public ChessGame() {
 
     }
@@ -31,6 +34,7 @@ public class ChessGame {
     public void setTeamTurn(TeamColor team) {
         currTurn = team;
     }
+
 
     /**
      * Enum identifying the 2 possible teams in a chess game
@@ -57,7 +61,7 @@ public class ChessGame {
         TeamColor color = chessBoard.getPiece(startPosition).getTeamColor();
 
         for(ChessMove move : moves){
-            if(!putsKingInDanger(move,chessBoard,color)){
+            if(isMoveValid(move,color)){
                 validMoves.add(move);
             }
         }
@@ -91,7 +95,7 @@ public class ChessGame {
         ChessPiece.PieceType promotion = move.getPromotionPiece();
         boolean madeMove = false;
         for(ChessMove myMove : validMoves){
-            if (myMove == move){
+            if (myMove.equals(move)){
                 if(promotion != null){
                     piece = new ChessPiece(piece.getTeamColor(),promotion);
                 }
@@ -135,6 +139,16 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
+        Collection<ChessMove> allValid = new HashSet<>();
+        Collection<ChessMove> allPossible = allMoves(teamColor);
+        for(ChessMove move: allPossible){
+            if(isMoveValid(move,teamColor)){
+                allValid.add(move);
+            }
+        }
+        if(isInCheck(teamColor) && allValid.isEmpty()){
+            return true;
+        }
         return false;
     }
 
@@ -170,6 +184,9 @@ public class ChessGame {
 
     private boolean kingIsInDanger(ChessBoard board, TeamColor color){
         ChessPosition kingPosition = findKing(board,color);
+        if(kingPosition == null){
+            return false;
+        }
         TeamColor otherTeamColor;
         if(color == TeamColor.WHITE){
             otherTeamColor = TeamColor.BLACK;
@@ -178,11 +195,22 @@ public class ChessGame {
             otherTeamColor = TeamColor.WHITE;
         }
         Collection<ChessMove> allPossibleMoves = allMoves(otherTeamColor);
-        ChessMove currMove;
+        /*ChessMove currMove;
         for(int i = 0; i < allPossibleMoves.size(); i++) {
             currMove = allPossibleMoves[i];
             if (currMove.getEndPosition() == kingPosition) {
                 if(isMoveValid(currMove,otherTeamColor)) {
+                    return true;
+                }
+            }
+        }*/
+        ChessPosition end;
+        Iterator<ChessMove> iterator = allPossibleMoves.iterator();
+        while(iterator.hasNext()) {
+            ChessMove currMove = iterator.next();
+            end = currMove.getEndPosition();
+            if (end.getRow() == kingPosition.getRow() && end.getColumn() == kingPosition.getColumn()) {
+                if(isMoveValid(currMove, otherTeamColor)) {
                     return true;
                 }
             }
@@ -193,7 +221,7 @@ public class ChessGame {
     private boolean putsKingInDanger(ChessMove move, ChessBoard board, TeamColor color){
         //ChessPosition kingPosition = findKing(board,color);
         //TeamColor otherTeamColor;
-        ChessBoard hypotheticalBoard = chessBoard;
+        ChessBoard hypotheticalBoard = chessBoard.copyBoard(chessBoard);
         ChessPiece.PieceType promotion = move.getPromotionPiece();
         ChessPiece piece = hypotheticalBoard.getPiece(move.getStartPosition());
         /*if(color == TeamColor.WHITE){
