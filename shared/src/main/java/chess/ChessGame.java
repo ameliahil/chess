@@ -73,12 +73,12 @@ public class ChessGame {
         return !putsKingInDanger(move, chessBoard, color);
     }
 
-    private Collection<ChessMove> allMoves(TeamColor color){
+    private Collection<ChessMove> allMoves(ChessBoard board, TeamColor color){
         ChessPiece object = new ChessPiece(null,null);
         Collection<ChessPosition> positions = currPositions(chessBoard, color);
         Collection<ChessMove> allMoves = new HashSet<>();
         for(ChessPosition position : positions){
-            allMoves.addAll(object.pieceMoves(chessBoard,position));
+            allMoves.addAll(object.pieceMoves(board,position));
         }
         return allMoves;
     }
@@ -140,7 +140,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         Collection<ChessMove> allValid = new HashSet<>();
-        Collection<ChessMove> allPossible = allMoves(teamColor);
+        Collection<ChessMove> allPossible = allMoves(chessBoard,teamColor);
         for(ChessMove move: allPossible){
             if(isMoveValid(move,teamColor)){
                 allValid.add(move);
@@ -160,8 +160,14 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return false;
-
+        Collection<ChessMove> allValid = new HashSet<>();
+        Collection<ChessMove> allPossible = allMoves(chessBoard,teamColor);
+        for(ChessMove move: allPossible){
+            if(isMoveValid(move,teamColor)){
+                allValid.add(move);
+            }
+        }
+        return allValid.isEmpty();
     }
 
     /**
@@ -194,7 +200,7 @@ public class ChessGame {
         else{
             otherTeamColor = TeamColor.WHITE;
         }
-        Collection<ChessMove> allPossibleMoves = allMoves(otherTeamColor);
+        Collection<ChessMove> allPossibleMoves = allMoves(board,otherTeamColor);
         /*ChessMove currMove;
         for(int i = 0; i < allPossibleMoves.size(); i++) {
             currMove = allPossibleMoves[i];
@@ -210,9 +216,10 @@ public class ChessGame {
             ChessMove currMove = iterator.next();
             end = currMove.getEndPosition();
             if (end.getRow() == kingPosition.getRow() && end.getColumn() == kingPosition.getColumn()) {
-                if(isMoveValid(currMove, otherTeamColor)) {
+                /*if(isMoveValid(currMove, otherTeamColor)) {
                     return true;
-                }
+                }*/
+                return true;
             }
         }
         return false;
