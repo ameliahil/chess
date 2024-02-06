@@ -354,81 +354,73 @@ public class ChessPiece {
         ChessPosition newPosition = new ChessPosition(0,0);
         if (color == ChessGame.TeamColor.WHITE) {
             newPosition = new ChessPosition(row + 1, col - 1 );
-            if(board.getPiece(newPosition) != null) {
-                if (validatePosition(board, newPosition, color)) {
-                    if(!promotePiece) {
-                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
-                        pawnMoves.add(newMove);
-                    }
-                    else{
-                        ChessMove newMove = new ChessMove(myPosition, newPosition, PieceType.QUEEN);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
-                        pawnMoves.add(newMove);
-                    }
+            if(validatePosition(board, newPosition, color) && board.getPiece(newPosition) != null) {
+                if(!promotePiece) {
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    pawnMoves.add(newMove);
+                }
+                else {
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, PieceType.QUEEN);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
+                    pawnMoves.add(newMove);
                 }
             }
             newPosition = new ChessPosition(row + 1, col + 1 );
-            if(board.getPiece(newPosition) != null) {
-                if (validatePosition(board, newPosition, color)) {
-                    if(!promotePiece) {
-                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
-                        pawnMoves.add(newMove);
-                    }
-                    else{
-                        ChessMove newMove = new ChessMove(myPosition, newPosition, PieceType.QUEEN);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
-                        pawnMoves.add(newMove);
-                    }
+            if(validatePosition(board, newPosition, color) && board.getPiece(newPosition) != null) {
+                if(!promotePiece) {
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    pawnMoves.add(newMove);
+                }
+                else{
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, PieceType.QUEEN);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
+                    pawnMoves.add(newMove);
                 }
             }
         }
         if (color == ChessGame.TeamColor.BLACK) {
             newPosition = new ChessPosition(row - 1, col - 1);
-            if(board.getPiece(newPosition) != null) {
-                if (validatePosition(board, newPosition, color)) {
-                    if(!promotePiece) {
-                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
-                        pawnMoves.add(newMove);
-                    }
-                    else{
-                        ChessMove newMove =  new ChessMove(myPosition, newPosition, PieceType.QUEEN);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
-                        pawnMoves.add(newMove);
-                    }
+            if(validatePosition(board, newPosition, color) && board.getPiece(newPosition) != null) {
+                if(!promotePiece) {
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    pawnMoves.add(newMove);
+                }
+                else{
+                    ChessMove newMove =  new ChessMove(myPosition, newPosition, PieceType.QUEEN);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
+                    pawnMoves.add(newMove);
                 }
             }
             newPosition = new ChessPosition(row - 1, col + 1);
-            if(board.getPiece(newPosition) != null) {
-                if (validatePosition(board, newPosition, color)) {
-                    if(!promotePiece) {
-                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
-                        pawnMoves.add(newMove);
-                    }
-                    else{
-                        ChessMove newMove = new ChessMove(myPosition, newPosition, PieceType.QUEEN);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
-                        pawnMoves.add(newMove);
-                        newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
-                        pawnMoves.add(newMove);
-                    }
+            if(validatePosition(board, newPosition, color) && board.getPiece(newPosition) != null) {
+                if(!promotePiece) {
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    pawnMoves.add(newMove);
+                }
+                else{
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, PieceType.QUEEN);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.BISHOP);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.ROOK);
+                    pawnMoves.add(newMove);
+                    newMove = new ChessMove(myPosition, newPosition, PieceType.KNIGHT);
+                    pawnMoves.add(newMove);
                 }
             }
         }
