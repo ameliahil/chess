@@ -13,7 +13,7 @@ import java.util.Objects;
  */
 public class ChessGame {
     private ChessBoard chessBoard = null;
-    private TeamColor currTurn = null;
+    private TeamColor currTurn = TeamColor.WHITE;
 
     public ChessGame() {
 
@@ -91,6 +91,10 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = chessBoard.getPiece(move.getStartPosition());
+        TeamColor color = piece.getTeamColor();
+        if(color != currTurn){
+            throw new InvalidMoveException();
+        }
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
         ChessPiece.PieceType promotion = move.getPromotionPiece();
         boolean madeMove = false;
@@ -117,7 +121,7 @@ public class ChessGame {
         if(currTurn == TeamColor.BLACK){
             currTurn = TeamColor.WHITE;
         }
-        if(currTurn == TeamColor.WHITE){
+        else{
             currTurn = TeamColor.BLACK;
         }
     }
