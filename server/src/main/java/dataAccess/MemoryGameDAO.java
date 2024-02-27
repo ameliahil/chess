@@ -9,4 +9,8 @@ public class MemoryGameDAO implements GameDAO{
     public void clear(){
         games.clear();
     }
+    public void createGame(){}
+    public GameData getGame(){return null;}
+    public HashSet<GameData> listGames(){return null;}
+    public void updateGame(){}
 }
