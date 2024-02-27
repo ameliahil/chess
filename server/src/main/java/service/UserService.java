@@ -1,5 +1,7 @@
 package service;
 
+import Requests.LoginRequest;
+import Requests.LoginResponse;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryUserDAO;
 import dataAccess.UserDAO;
@@ -17,7 +19,7 @@ public class UserService {
         userDAO.clear();
     }
 
-    public String addUser(UserData user) throws DataAccessException{
+    public LoginResponse addUser(UserData user) throws DataAccessException{
         return userDAO.createUser(user.username(),user.password(),user.email());
     }
 }

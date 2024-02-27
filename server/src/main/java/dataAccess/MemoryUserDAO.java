@@ -1,5 +1,6 @@
 package dataAccess;
 
+import Requests.LoginResponse;
 import model.UserData;
 import java.util.HashMap;
 
@@ -8,11 +9,11 @@ public class MemoryUserDAO implements UserDAO{
     public void clear(){
         users.clear();
     }
-    public String createUser(String username, String password, String email){
+    public LoginResponse createUser(String username, String password, String email){
         UserData newUser = new UserData(username,password,email);
         users.put(username,newUser);
         MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        return authDAO.createAuth(username);
+        return new LoginResponse(username, authDAO.createAuth(username));
     }
     public UserData getUser(String username){
         return users.get(username);

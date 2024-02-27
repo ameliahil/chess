@@ -1,8 +1,9 @@
 package dataAccess;
+import Requests.LoginResponse;
 import model.UserData;
 
 public interface UserDAO {
     void clear();
-    String createUser(String username, String password, String email);
+    LoginResponse createUser(String username, String password, String email);
     UserData getUser(String username);
 }

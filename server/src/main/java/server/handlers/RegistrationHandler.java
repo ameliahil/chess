@@ -1,4 +1,5 @@
 package server.handlers;
+import Requests.LoginResponse;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryUserDAO;
@@ -17,7 +18,9 @@ public class RegistrationHandler {
     }
 
     public Object register(Request req, Response res) throws DataAccessException {
-        var user = new Gson().fromJson(req.body(), UserData.class);
-        Gson.toJson(userService.addUser(user));
+        UserData user = new Gson().fromJson(req.body(), UserData.class);
+        LoginResponse login = userService.addUser(user);
+        res.status(200);
+        return new Gson().toJson(login);
     }
 }
