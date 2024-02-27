@@ -15,6 +15,10 @@ public class MemoryUserDAO implements UserDAO{
         MemoryAuthDAO authDAO = new MemoryAuthDAO();
         return new LoginResponse(username, authDAO.createAuth(username));
     }
+    public LoginResponse login(String username, String password){
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();
+        return new LoginResponse(username, authDAO.createAuth(username));
+    }
     public UserData getUser(String username){
         return users.get(username);
     }
