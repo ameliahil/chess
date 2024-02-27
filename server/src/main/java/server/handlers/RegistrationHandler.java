@@ -18,6 +18,6 @@ public class RegistrationHandler {
 
     public Object register(Request req, Response res) throws DataAccessException {
         var user = new Gson().fromJson(req.body(), UserData.class);
-        return Gson.toJson(userService.addUser(user));
+        Gson.toJson(userService.addUser(user));
     }
 }
