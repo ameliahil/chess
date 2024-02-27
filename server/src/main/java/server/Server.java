@@ -23,6 +23,11 @@ public class Server {
         return Spark.port();
     }
 
+    public static void main(String[] args){
+        Server server = new Server();
+        server.run(8080);
+    }
+
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
