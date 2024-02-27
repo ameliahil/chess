@@ -36,7 +36,7 @@ public class ClearHandler {
         authService.clearAuth();
         gameService.clearGame();
         userService.clearUser();
-        res.status(204);
+        res.status(200);
         return "";
     }
 

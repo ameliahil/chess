@@ -1,7 +1,9 @@
 package service;
 
 import dataAccess.DataAccessException;
+import dataAccess.MemoryUserDAO;
 import dataAccess.UserDAO;
+import model.UserData;
 
 public class UserService {
     private final UserDAO userDAO;
@@ -13,5 +15,9 @@ public class UserService {
 
     public void clearUser() throws DataAccessException{
         userDAO.clear();
+    }
+
+    public String addUser(UserData user) throws DataAccessException{
+        return userDAO.createUser(user.username(),user.password(),user.email());
     }
 }

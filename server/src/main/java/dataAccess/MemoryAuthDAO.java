@@ -10,10 +10,11 @@ public class MemoryAuthDAO implements AuthDAO{
     public void clear(){
         authTokens.clear();
     }
-    public void createAuth(String username){
+    public String createAuth(String username){
         String token = UUID.randomUUID().toString();
         AuthData authToken = new AuthData(token, username);
         authTokens.put(token,authToken);
+        return token;
     }
     public AuthData getAuth(String username){
         return authTokens.get(username);
