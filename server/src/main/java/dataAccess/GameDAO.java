@@ -1,5 +1,6 @@
 package dataAccess;
 
+import Requests.CreateGameResponse;
 import chess.ChessGame;
 import model.GameData;
 
@@ -7,7 +8,7 @@ import java.util.HashSet;
 
 public interface GameDAO {
     void clear();
-    void createGame(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame implementation);
+    CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName);
     GameData getGame(String gameName);
     HashSet<GameData> listGames();
     void updateGame();
