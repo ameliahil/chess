@@ -1,11 +1,15 @@
 package server;
 
+import dataAccess.*;
 import server.handlers.ClearHandler;
 import spark.*;
 
+
 public class Server {
 
-    //initialize DAOs here, pass into handler
+    MemoryUserDAO userDAO = new MemoryUserDAO();
+    MemoryGameDAO gameDAO = new MemoryGameDAO();
+    MemoryAuthDAO authDAO = new MemoryAuthDAO();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -14,7 +18,7 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
         // Spark, classroom notes
-        Spark.delete("/db", (req,res) -> (new ClearHandler()));
+        Spark.delete("/db", (Request req, Response res) -> (new ClearHandler(userDAO,gameDAO,authDAO)).clear(req, res));
         Spark.awaitInitialization();
         return Spark.port();
     }
