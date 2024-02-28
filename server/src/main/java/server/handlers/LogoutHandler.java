@@ -17,16 +17,9 @@ public class LogoutHandler {
         String auth = req.headers("Authorization");
         try{authService.logout(auth);}
         catch (DataAccessException error){
-            if(error.getMessage().equals("Error: unauthorized")){
-                res.status(401);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
-            else{
-                res.status(500);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
+            ExceptionHandler exception = new ExceptionHandler(error.getMessage());
+            res.status(exception.findException());
+            return new Gson().toJson(exception);
         }
         res.status(200);
         return "";

@@ -30,20 +30,9 @@ public class RegistrationHandler {
             login = userService.addUser(user);
         }
         catch (DataAccessException error){
-            if(error.getMessage().equals("Error: bad request")){
-                res.status(400);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
-            if(error.getMessage().equals("Error: already taken")){
-                res.status(403);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
-            else{
-                res.status(500);
-                return new Gson().toJson(error);
-            }
+            ExceptionHandler exception = new ExceptionHandler(error.getMessage());
+            res.status(exception.findException());
+            return new Gson().toJson(exception);
         }
         authService.insertAuth(login.username(),login.authToken());
         res.status(200);

@@ -28,11 +28,9 @@ public class ListGamesHandler {
         String auth = req.headers("Authorization");
         try{authService.findAuth(auth);}
         catch(DataAccessException error){
-            if(error.getMessage().equals("Error: unauthorized")){
-                res.status(401);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
+            ExceptionHandler exception = new ExceptionHandler(error.getMessage());
+            res.status(exception.findException());
+            return new Gson().toJson(exception);
         }
         HashSet<ListGamesResponse> games;
         try{

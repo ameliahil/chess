@@ -27,24 +27,15 @@ public class CreateGameHandler {
         String auth = req.headers("Authorization");
         try{authService.findAuth(auth);}
         catch(DataAccessException error){
-            if(error.getMessage().equals("Error: unauthorized")){
-                res.status(401);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
+            ExceptionHandler exception = new ExceptionHandler(error.getMessage());
+            res.status(exception.findException());
+            return new Gson().toJson(exception);
         }
         try{createGame = gameService.createGame(gameName.gameName());}
         catch (DataAccessException error){
-            if(error.getMessage().equals("Error: bad request")) {
-                res.status(400);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
-            else{
-                res.status(500);
-                ExceptionHandler exception = new ExceptionHandler(error.getMessage());
-                return new Gson().toJson(exception);
-            }
+            ExceptionHandler exception = new ExceptionHandler(error.getMessage());
+            res.status(exception.findException());
+            return new Gson().toJson(exception);
         }
         res.status(200);
         return new Gson().toJson(createGame);
