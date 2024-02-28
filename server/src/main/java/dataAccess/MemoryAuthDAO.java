@@ -22,4 +22,7 @@ public class MemoryAuthDAO implements AuthDAO{
     public void deleteAuth(){ //multiple auth tokens?
 
     }
+    public void logout(String authToken){
+        authTokens.remove(authToken);
+    }
 }

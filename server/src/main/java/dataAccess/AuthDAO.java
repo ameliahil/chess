@@ -8,5 +8,6 @@ public interface AuthDAO {
     String createAuth(String username);
     AuthData getAuth(String username);
     void deleteAuth();
+    void logout(String authToken);
 
 }

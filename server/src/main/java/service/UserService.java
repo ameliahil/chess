@@ -23,7 +23,9 @@ public class UserService {
         return userDAO.createUser(user.username(),user.password(),user.email());
     }
 
-    public LoginResponse login(LoginRequest loginRequest){
+    public LoginResponse login(LoginRequest loginRequest) throws DataAccessException{
         return userDAO.login(loginRequest.username(),loginRequest.password());
     }
+
+
 }
