@@ -17,6 +17,7 @@ public class MemoryGameDAO implements GameDAO{
     public void clear(){
         games.clear();
         gameIDList.clear();
+        gameNames.clear();
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
         if(gameNames.get(gameName) != null){
