@@ -2,6 +2,7 @@ package service;
 
 import Requests.CreateGameResponse;
 import Requests.JoinRequest;
+import Requests.ListGamesResponse;
 import chess.ChessGame;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryGameDAO;
@@ -25,7 +26,7 @@ public class GameService {
         if(joinRequest.playerColor() == ChessGame.TeamColor.WHITE){
             gameDAO.updateWhiteUsername(joinRequest.gameID(),username);
         }
-        else{
+        if(joinRequest.playerColor() == ChessGame.TeamColor.BLACK){
             gameDAO.updateBlackUsername(joinRequest.gameID(),username);
         }
     }
@@ -34,7 +35,7 @@ public class GameService {
         return gameDAO.createGame(null,null,gameName);
     }
 
-    public Collection<GameData> listGames() throws DataAccessException {
+    public Collection<ListGamesResponse> listGames() throws DataAccessException {
         return gameDAO.listGames();
     }
 }

@@ -1,4 +1,6 @@
 package server.handlers;
+import Requests.ListGamesResponse;
+import Requests.ListGamesResponseList;
 import Requests.LoginRequest;
 import Requests.LoginResponse;
 import com.google.gson.Gson;
@@ -32,7 +34,7 @@ public class ListGamesHandler {
                 return new Gson().toJson(exception);
             }
         }
-        HashSet<GameData> games;
+        HashSet<ListGamesResponse> games;
         try{
             games = new HashSet<>(gameService.listGames());
         }
@@ -41,7 +43,8 @@ public class ListGamesHandler {
             ExceptionHandler exception = new ExceptionHandler(error.getMessage());
             return new Gson().toJson(exception);
         }
+        ListGamesResponseList gamesList = new ListGamesResponseList(games);
         res.status(200);
-        return new Gson().toJson(games);
+        return new Gson().toJson(gamesList);
     }
 }

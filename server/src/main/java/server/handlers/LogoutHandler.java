@@ -12,7 +12,6 @@ public class LogoutHandler {
     private final AuthService authService;
     public LogoutHandler(MemoryAuthDAO authDAO) {
         authService = new AuthService(authDAO);
-        int size = authDAO.checkMap();
     }
     public Object logout(Request req, Response res) throws DataAccessException {
         String auth = req.headers("Authorization");

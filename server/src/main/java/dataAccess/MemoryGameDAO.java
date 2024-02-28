@@ -1,6 +1,7 @@
 package dataAccess;
 
 import Requests.CreateGameResponse;
+import Requests.ListGamesResponse;
 import chess.ChessGame;
 import model.GameData;
 
@@ -14,6 +15,7 @@ public class MemoryGameDAO implements GameDAO{
     int currID = -1;
     public void clear(){
         games.clear();
+        gameIDList.clear();
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName){
         int gameID = assignGameID();
@@ -26,10 +28,11 @@ public class MemoryGameDAO implements GameDAO{
     public GameData getGame(int gameID){
         return games.get(gameID);
     }
-    public Collection<GameData> listGames() throws DataAccessException{
-        HashSet<GameData> gameList = new HashSet<>();
+    public Collection<ListGamesResponse> listGames() throws DataAccessException{
+        HashSet<ListGamesResponse> gameList = new HashSet<>();
         for(int gameID: gameIDList){
-            gameList.add(games.get(gameID));
+            GameData currGame = games.get(gameID);
+            gameList.add(new ListGamesResponse(gameID,currGame.whiteUsername(),currGame.blackUsername(),currGame.gameName()));
         }
         return gameList;
     }
