@@ -22,7 +22,27 @@ public class MemoryAuthDAO implements AuthDAO{
     public void deleteAuth(){ //multiple auth tokens?
 
     }
-    public void logout(String authToken){
+    public int checkMap(){return authTokens.size();}
+    public void logout(String authToken) throws DataAccessException {
+        if(authTokens.get(authToken) == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
         authTokens.remove(authToken);
     }
+
+    public void insertAuth(String username, String authToken){
+        AuthData authData = new AuthData(authToken,username);
+        authTokens.put(authToken, authData);
+    }
+
+    public String getUser(String authToken){
+        return authTokens.get(authToken).username();
+    }
+
+    public void findAuth(String authToken) throws DataAccessException {
+        if(authTokens.get(authToken) == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+    }
 }
+

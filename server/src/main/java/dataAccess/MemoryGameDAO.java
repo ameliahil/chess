@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class MemoryGameDAO implements GameDAO{
-    HashMap<String, GameData> games = new HashMap<>(); //gameName or gameID
-    HashSet<GameData> gamesList = new HashSet<>();
-    int currID = 0;
+    HashMap<Integer, GameData> games = new HashMap<>(); //gameName or gameID
+    HashSet<Integer> gameIDList = new HashSet<>();
+    int currID = -1;
     public void clear(){
         games.clear();
     }
@@ -18,16 +18,31 @@ public class MemoryGameDAO implements GameDAO{
         int gameID = assignGameID();
         ChessGame implementation = new ChessGame();
         GameData game = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
-        games.put(gameName, game);
-        gamesList.add(game);
+        games.put(gameID, game);
+        gameIDList.add(gameID);
         return new CreateGameResponse(gameID);
     }
-    public GameData getGame(String gameName){
-        return games.get(gameName);
+    public GameData getGame(int gameID){
+        return games.get(gameID);
     }
-    public HashSet<GameData> listGames(){return gamesList;}
+    public HashSet<GameData> listGames(){
+        return null;
+    }
     public void updateGame(){ //just implementation?
 
+    }
+    public void updateBlackUsername(int gameID, String username){
+        GameData game = getGame(gameID);
+        GameData newGame = new GameData(gameID,game.whiteUsername(),username,game.gameName(),game.implementation());
+        games.remove(gameID);
+        games.put(gameID,newGame);
+    }
+
+    public void updateWhiteUsername(int gameID, String username){
+        GameData game = getGame(gameID);
+        GameData newGame = new GameData(gameID,username,game.blackUsername(),game.gameName(),game.implementation());
+        games.remove(gameID);
+        games.put(gameID,newGame);
     }
 
     private int assignGameID(){

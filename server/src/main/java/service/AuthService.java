@@ -18,4 +18,15 @@ public class AuthService {
     public void logout(String authToken) throws DataAccessException{
         authDAO.logout(authToken);
     }
+    public String getUser(String authToken) throws DataAccessException{
+        return authDAO.getUser(authToken);
+    }
+
+    public void insertAuth(String username, String authToken){
+        authDAO.insertAuth(username,authToken);
+    }
+
+    public void findAuth(String auth) throws DataAccessException {
+        authDAO.findAuth(auth);
+    }
 }

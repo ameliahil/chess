@@ -7,4 +7,5 @@ public record GameData(int GameID, String whiteUsername, String blackUsername, S
     public String toString(){
         return new Gson().toJson(this);
     }
+
 }

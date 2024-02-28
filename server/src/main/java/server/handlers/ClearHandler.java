@@ -1,5 +1,6 @@
 package server.handlers;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
