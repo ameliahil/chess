@@ -22,6 +22,6 @@ public class JoinGameHandler {
         String user = authService.getUser(auth);
         gameService.join(joinRequest, user);
         res.status(200);
-        return new Gson().toJson("");
+        return "";
     }
 }

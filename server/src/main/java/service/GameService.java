@@ -7,6 +7,9 @@ import dataAccess.DataAccessException;
 import dataAccess.MemoryGameDAO;
 import model.GameData;
 
+import javax.xml.crypto.Data;
+import java.util.Collection;
+
 public class GameService {
     private final MemoryGameDAO gameDAO;
 
@@ -29,5 +32,9 @@ public class GameService {
 
     public CreateGameResponse createGame(String gameName) throws DataAccessException{
         return gameDAO.createGame(null,null,gameName);
+    }
+
+    public Collection<GameData> listGames() throws DataAccessException {
+        return gameDAO.listGames();
     }
 }

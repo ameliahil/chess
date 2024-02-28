@@ -4,6 +4,7 @@ import Requests.CreateGameResponse;
 import chess.ChessGame;
 import model.GameData;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -25,8 +26,12 @@ public class MemoryGameDAO implements GameDAO{
     public GameData getGame(int gameID){
         return games.get(gameID);
     }
-    public HashSet<GameData> listGames(){
-        return null;
+    public Collection<GameData> listGames() throws DataAccessException{
+        HashSet<GameData> gameList = new HashSet<>();
+        for(int gameID: gameIDList){
+            gameList.add(games.get(gameID));
+        }
+        return gameList;
     }
     public void updateGame(){ //just implementation?
 
