@@ -38,13 +38,11 @@ public class MemoryGameDAO implements GameDAO{
         HashSet<ListGamesResponse> gameList = new HashSet<>();
         for(int gameID: gameIDList){
             GameData currGame = games.get(gameID);
-            gameList.add(new ListGamesResponse(currGame.GameID(),currGame.whiteUsername(),currGame.blackUsername(),currGame.gameName()));
+            gameList.add(new ListGamesResponse(currGame.gameID(),currGame.whiteUsername(),currGame.blackUsername(),currGame.gameName()));
         }
         return gameList;
     }
-    public void updateGame(){ //just implementation?
 
-    }
     public void updateBlackUsername(int gameID, String username) throws DataAccessException{
         GameData game = getGame(gameID);
         if(game.blackUsername() != null){
