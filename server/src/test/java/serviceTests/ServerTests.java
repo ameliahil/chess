@@ -6,7 +6,6 @@ import dataAccess.MemoryGameDAO;
 import dataAccess.MemoryUserDAO;
 import org.junit.jupiter.api.*;
 import model.*;
-import chess.ChessGame;
 import service.AuthService;
 import service.GameService;
 import service.UserService;

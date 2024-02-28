@@ -3,7 +3,6 @@ package service;
 import Requests.LoginRequest;
 import Requests.LoginResponse;
 import dataAccess.DataAccessException;
-import dataAccess.MemoryUserDAO;
 import dataAccess.UserDAO;
 import model.UserData;
 
@@ -15,7 +14,7 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public void clearUser() throws DataAccessException{
+    public void clearUser(){
         userDAO.clear();
     }
 

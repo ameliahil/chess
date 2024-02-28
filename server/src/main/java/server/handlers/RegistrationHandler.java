@@ -1,7 +1,6 @@
 package server.handlers;
 import Requests.LoginResponse;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import dataAccess.DataAccessException;
 import dataAccess.ExceptionHandler;
 import dataAccess.MemoryAuthDAO;
@@ -13,17 +12,15 @@ import spark.Request;
 import spark.Response;
 
 public class RegistrationHandler {
-    //private final MemoryUserDAO userDAO;
     private final UserService userService;
     private final AuthService authService;
 
     public RegistrationHandler(MemoryUserDAO userDAO, MemoryAuthDAO authDAO) {
-        //this.userDAO = userDAO;
         userService = new UserService(userDAO);
         authService = new AuthService(authDAO);
     }
 
-    public Object register(Request req, Response res) throws DataAccessException {
+    public Object register(Request req, Response res) {
         UserData user = new Gson().fromJson(req.body(), UserData.class);
         LoginResponse login;
         try {

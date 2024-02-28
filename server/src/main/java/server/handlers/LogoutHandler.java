@@ -6,14 +6,13 @@ import dataAccess.MemoryAuthDAO;
 import service.AuthService;
 import spark.Request;
 import spark.Response;
-import model.AuthData;
 
 public class LogoutHandler {
     private final AuthService authService;
     public LogoutHandler(MemoryAuthDAO authDAO) {
         authService = new AuthService(authDAO);
     }
-    public Object logout(Request req, Response res) throws DataAccessException {
+    public Object logout(Request req, Response res) {
         String auth = req.headers("Authorization");
         try{authService.logout(auth);}
         catch (DataAccessException error){

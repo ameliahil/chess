@@ -34,7 +34,7 @@ public class MemoryGameDAO implements GameDAO{
     public GameData getGame(int gameID){
         return games.get(gameID);
     }
-    public Collection<ListGamesResponse> listGames() throws DataAccessException{
+    public Collection<ListGamesResponse> listGames() {
         HashSet<ListGamesResponse> gameList = new HashSet<>();
         for(int gameID: gameIDList){
             GameData currGame = games.get(gameID);

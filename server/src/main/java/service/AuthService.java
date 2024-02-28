@@ -3,8 +3,6 @@ package service;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 
-import javax.xml.crypto.Data;
-
 public class AuthService {
     private final MemoryAuthDAO authDAO;
 
@@ -12,13 +10,13 @@ public class AuthService {
         this.authDAO = authDAO;
     }
 
-    public void clearAuth() throws DataAccessException{
+    public void clearAuth(){
         authDAO.clear();
     }
     public void logout(String authToken) throws DataAccessException{
         authDAO.logout(authToken);
     }
-    public String getUser(String authToken) throws DataAccessException{
+    public String getUser(String authToken){
         return authDAO.getUser(authToken);
     }
 

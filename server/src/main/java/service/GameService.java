@@ -6,9 +6,6 @@ import Requests.ListGamesResponse;
 import chess.ChessGame;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryGameDAO;
-import model.GameData;
-
-import javax.xml.crypto.Data;
 import java.util.Collection;
 
 public class GameService {
@@ -18,7 +15,7 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-    public void clearGame() throws DataAccessException{
+    public void clearGame(){
         gameDAO.clear();
     }
 

@@ -22,7 +22,6 @@ public class MemoryAuthDAO implements AuthDAO{
     public void deleteAuth(){ //multiple auth tokens?
 
     }
-    public int checkMap(){return authTokens.size();}
     public void logout(String authToken) throws DataAccessException {
         if(authTokens.get(authToken) == null){
             throw new DataAccessException("Error: unauthorized");

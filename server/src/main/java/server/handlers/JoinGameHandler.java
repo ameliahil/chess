@@ -18,8 +18,8 @@ public class JoinGameHandler {
         authService = new AuthService(authDAO);
     }
     public Object joinGame(Request req, Response res) throws DataAccessException {
-        JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
         String auth = req.headers("Authorization");
+        JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
         try{authService.findAuth(auth);}
         catch(DataAccessException error){
             ExceptionHandler exception = new ExceptionHandler(error.getMessage());

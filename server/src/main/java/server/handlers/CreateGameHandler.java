@@ -12,19 +12,17 @@ import spark.Request;
 import spark.Response;
 
 public class CreateGameHandler {
-    private final MemoryGameDAO gameDAO;
 
     private final GameService gameService;
     private final AuthService authService;
     public CreateGameHandler(MemoryGameDAO gameDAO, MemoryAuthDAO authDAO) {
-        this.gameDAO = gameDAO;
         gameService = new GameService(gameDAO);
         authService = new AuthService(authDAO);
     }
     public Object createGame(Request req, Response res){
         CreateGameRequest gameName = new Gson().fromJson(req.body(), CreateGameRequest.class);
-        CreateGameResponse createGame;
         String auth = req.headers("Authorization");
+        CreateGameResponse createGame;
         try{authService.findAuth(auth);}
         catch(DataAccessException error){
             ExceptionHandler exception = new ExceptionHandler(error.getMessage());

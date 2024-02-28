@@ -1,7 +1,5 @@
 package dataAccess;
 
-import com.google.gson.Gson;
-
 public class ExceptionHandler {
     private final String message;
 

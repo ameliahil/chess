@@ -6,19 +6,16 @@ import dataAccess.DataAccessException;
 import dataAccess.ExceptionHandler;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
-import model.UserData;
 import service.AuthService;
 import service.UserService;
 import spark.Request;
 import spark.Response;
 
 public class LoginHandler {
-    private final MemoryUserDAO userDAO;
     private final UserService userService;
     private final AuthService authService;
 
     public LoginHandler(MemoryUserDAO userDAO, MemoryAuthDAO authDAO) {
-        this.userDAO = userDAO;
         userService = new UserService(userDAO);
         authService = new AuthService(authDAO);
     }
