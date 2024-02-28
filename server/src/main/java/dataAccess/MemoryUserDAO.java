@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class MemoryUserDAO implements UserDAO{
-    HashMap<String,UserData> users = new HashMap<>();
+    public HashMap<String,UserData> users = new HashMap<>();
     public void clear(){
         users.clear();
     }

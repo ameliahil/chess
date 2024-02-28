@@ -22,12 +22,15 @@ public class GameService {
         gameDAO.clear();
     }
 
-    public void join(JoinRequest joinRequest, String username){
+    public void join(JoinRequest joinRequest, String username)throws DataAccessException{
         if(joinRequest.playerColor() == ChessGame.TeamColor.WHITE){
             gameDAO.updateWhiteUsername(joinRequest.gameID(),username);
         }
-        if(joinRequest.playerColor() == ChessGame.TeamColor.BLACK){
+        else if(joinRequest.playerColor() == ChessGame.TeamColor.BLACK){
             gameDAO.updateBlackUsername(joinRequest.gameID(),username);
+        }
+        else{
+            gameDAO.watch(joinRequest.gameID());
         }
     }
 
