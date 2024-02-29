@@ -339,7 +339,7 @@ public class ChessPiece {
                     pawnMoves.add(newMove);
                 }
                 else{
-                    HashSet<ChessMove> newPieces = addAllPromotion(myPosition,newPosition)
+                    Collection<ChessMove> newPieces = addAllPromotion(myPosition,newPosition);
                     pawnMoves.addAll(newPieces);
                 }
             }
