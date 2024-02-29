@@ -293,9 +293,8 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        Collection<ChessMove> pawnMoves;
+        Collection<ChessMove> pawnMoves = new HashSet<>();
         boolean promotePiece = false;
-        pawnMoves = new HashSet<>();
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         ChessPiece currPiece = board.getPiece(myPosition);
@@ -340,7 +339,8 @@ public class ChessPiece {
                     pawnMoves.add(newMove);
                 }
                 else{
-                    pawnMoves.addAll(addAllPromotion(myPosition,newPosition));
+                    HashSet<ChessMove> newPieces = addAllPromotion(myPosition,newPosition)
+                    pawnMoves.addAll(newPieces);
                 }
             }
         }
@@ -353,9 +353,7 @@ public class ChessPiece {
                     newMove = new ChessMove(myPosition, newPosition, null);
                     pawnMoves.add(newMove);
                 }
-                else {
-                    pawnMoves.addAll(addAllPromotion(myPosition,newPosition));
-                }
+                else { pawnMoves.addAll(addAllPromotion(myPosition,newPosition)); }
             }
             newPosition = new ChessPosition(row + 1, col + 1 );
             if(validatePosition(board, newPosition, color) && board.getPiece(newPosition) != null) {
@@ -376,9 +374,7 @@ public class ChessPiece {
                     ChessMove newMove = new ChessMove(myPosition, newPosition, null);
                     pawnMoves.add(newMove);
                 }
-                else{
-                    pawnMoves.addAll(addAllPromotion(myPosition,newPosition));
-                }
+                else{ pawnMoves.addAll(addAllPromotion(myPosition,newPosition)); }
             }
             newPosition = new ChessPosition(row - 1, col + 1);
             if(validatePosition(board, newPosition, color) && board.getPiece(newPosition) != null) {
@@ -386,12 +382,9 @@ public class ChessPiece {
                     ChessMove newMove = new ChessMove(myPosition, newPosition, null);
                     pawnMoves.add(newMove);
                 }
-                else{
-                    pawnMoves.addAll(addAllPromotion(myPosition,newPosition));
-                }
+                else{ pawnMoves.addAll(addAllPromotion(myPosition,newPosition)); }
             }
         }
-
         return pawnMoves;
     }
 
