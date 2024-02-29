@@ -3,7 +3,6 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -205,24 +204,12 @@ public class ChessGame {
             otherTeamColor = TeamColor.WHITE;
         }
         Collection<ChessMove> allPossibleMoves = allMoves(board,otherTeamColor);
-        /*ChessMove currMove;
-        for(int i = 0; i < allPossibleMoves.size(); i++) {
-            currMove = allPossibleMoves[i];
-            if (currMove.getEndPosition() == kingPosition) {
-                if(isMoveValid(currMove,otherTeamColor)) {
-                    return true;
-                }
-            }
-        }*/
         ChessPosition end;
         Iterator<ChessMove> iterator = allPossibleMoves.iterator();
         while(iterator.hasNext()) {
             ChessMove currMove = iterator.next();
             end = currMove.getEndPosition();
             if (end.getRow() == kingPosition.getRow() && end.getColumn() == kingPosition.getColumn()) {
-                /*if(isMoveValid(currMove, otherTeamColor)) {
-                    return true;
-                }*/
                 return true;
             }
         }
@@ -230,17 +217,10 @@ public class ChessGame {
     }
 
     private boolean putsKingInDanger(ChessMove move, ChessBoard board, TeamColor color){
-        //ChessPosition kingPosition = findKing(board,color);
-        //TeamColor otherTeamColor;
         ChessBoard hypotheticalBoard = chessBoard.copyBoard(chessBoard);
         ChessPiece.PieceType promotion = move.getPromotionPiece();
         ChessPiece piece = hypotheticalBoard.getPiece(move.getStartPosition());
-        /*if(color == TeamColor.WHITE){
-            otherTeamColor = TeamColor.BLACK;
-        }
-        else{
-            otherTeamColor = TeamColor.WHITE;
-        }*/
+
 
         if(promotion != null){
             piece = new ChessPiece(piece.getTeamColor(),promotion);
@@ -248,17 +228,6 @@ public class ChessGame {
         hypotheticalBoard.addPiece(move.getStartPosition(),null);
         hypotheticalBoard.addPiece(move.getEndPosition(),piece);
 
-        /*Collection<ChessPosition> positions = currPositions(hypotheticalBoard,otherTeamColor);
-        Collection<ChessMove> allPossibleMoves = new HashSet<>();
-        for(ChessPosition position : positions){
-            allPossibleMoves.addAll(validMoves(position));
-        }
-        for(ChessMove currMove : allPossibleMoves){
-            if(currMove.getEndPosition() == kingPosition){
-                return true;
-            }
-        }
-        return false;*/
         return kingIsInDanger(hypotheticalBoard, color);
     }
 
