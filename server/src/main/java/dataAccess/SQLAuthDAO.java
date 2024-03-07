@@ -9,7 +9,6 @@ import java.util.UUID;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SQLAuthDAO implements AuthDAO{
-    public HashMap<String, AuthData> authTokens = new HashMap<>();
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE pet";
         executeUpdate(statement);;
@@ -21,7 +20,6 @@ public class SQLAuthDAO implements AuthDAO{
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
                     if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
                 }
                 ps.executeUpdate();
 
@@ -40,8 +38,9 @@ public class SQLAuthDAO implements AuthDAO{
     public String createAuthTableString(String authToken, String username){
         return """
                 CREATE TABLE authTokens(
-                authToken varchar2(256) NOT NULL PRIMARY KEY,
-                username varchar2(256) NOT NULL,
+                'authToken' varchar2(256) NOT NULL PRIMARY KEY,
+                'username' varchar2(256) NOT NULL,
+                `json` TEXT DEFAULT NULL
                 """;
     }
     public String createAuth(String username){
@@ -49,6 +48,10 @@ public class SQLAuthDAO implements AuthDAO{
         AuthData authToken = new AuthData(token, username);
         authTokens.put(token,authToken);
         return token;
+    }
+
+    private void addAuth(String username, String authToken){
+
     }
 
     public void logout(String authToken) throws DataAccessException {
