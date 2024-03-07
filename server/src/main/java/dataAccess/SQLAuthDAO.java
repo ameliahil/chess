@@ -3,12 +3,16 @@ package dataAccess;
 import model.AuthData;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.UUID;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SQLAuthDAO implements AuthDAO{
+    public SQLAuthDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {}
+    }
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE pet";
         executeUpdate(statement);;
@@ -35,12 +39,13 @@ public class SQLAuthDAO implements AuthDAO{
         }
     }
 
-    public String createAuthTableString(String authToken, String username){
+    private String createAuthTableString(){
         return """
-                CREATE TABLE authTokens(
+                CREATE TABLE IF NOT EXISTS authTokens(
                 'authToken' varchar2(256) NOT NULL PRIMARY KEY,
                 'username' varchar2(256) NOT NULL,
                 `json` TEXT DEFAULT NULL
+                )
                 """;
     }
     public String createAuth(String username){
@@ -54,7 +59,7 @@ public class SQLAuthDAO implements AuthDAO{
 
     }
 
-    public void logout(String authToken) throws DataAccessException {
+    public void logout(String authToken) throws DataAccessException {}
         if(authTokens.get(authToken) == null){
             throw new DataAccessException("Error: unauthorized");
         }
@@ -79,10 +84,9 @@ public class SQLAuthDAO implements AuthDAO{
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
+            var statement = createAuthTableString();
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
             }
         }catch (SQLException ex) {
             throw new DataAccessException("Unable to configure database: %s");
