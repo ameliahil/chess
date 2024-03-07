@@ -1,9 +1,9 @@
 package server.handlers;
 
 import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.SQLAuthDAO;
+import dataAccess.SQLGameDAO;
+import dataAccess.SQLUserDAO;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -12,15 +12,15 @@ import spark.Response;
 
 public class ClearHandler {
 
-    private final MemoryUserDAO userDAO;
-    private final MemoryGameDAO gameDAO;
-    private final MemoryAuthDAO authDAO;
+    private final SQLUserDAO userDAO;
+    private final SQLGameDAO gameDAO;
+    private final SQLAuthDAO authDAO;
 
     private final UserService userService;
     private final GameService gameService;
     private final AuthService authService;
 
-    public ClearHandler(MemoryUserDAO userDAO, MemoryGameDAO gameDAO, MemoryAuthDAO authDAO){
+    public ClearHandler(SQLUserDAO userDAO, SQLGameDAO gameDAO, SQLAuthDAO authDAO){
 
         this.userDAO = userDAO;
         this.gameDAO = gameDAO;

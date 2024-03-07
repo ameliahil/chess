@@ -4,8 +4,8 @@ import Requests.CreateGameResponse;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.ExceptionHandler;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
+import dataAccess.SQLAuthDAO;
+import dataAccess.SQLGameDAO;
 import service.AuthService;
 import service.GameService;
 import spark.Request;
@@ -15,7 +15,7 @@ public class CreateGameHandler {
 
     private final GameService gameService;
     private final AuthService authService;
-    public CreateGameHandler(MemoryGameDAO gameDAO, MemoryAuthDAO authDAO) {
+    public CreateGameHandler(SQLGameDAO gameDAO, SQLAuthDAO authDAO) {
         gameService = new GameService(gameDAO);
         authService = new AuthService(authDAO);
     }

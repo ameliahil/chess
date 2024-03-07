@@ -2,14 +2,14 @@ package server.handlers;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.ExceptionHandler;
-import dataAccess.MemoryAuthDAO;
+import dataAccess.SQLAuthDAO;
 import service.AuthService;
 import spark.Request;
 import spark.Response;
 
 public class LogoutHandler {
     private final AuthService authService;
-    public LogoutHandler(MemoryAuthDAO authDAO) {
+    public LogoutHandler(SQLAuthDAO authDAO) {
         authService = new AuthService(authDAO);
     }
     public Object logout(Request req, Response res) {

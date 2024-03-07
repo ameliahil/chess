@@ -5,13 +5,13 @@ import Requests.JoinRequest;
 import Requests.ListGamesResponse;
 import chess.ChessGame;
 import dataAccess.DataAccessException;
-import dataAccess.MemoryGameDAO;
+import dataAccess.SQLGameDAO;
 import java.util.Collection;
 
 public class GameService {
-    private final MemoryGameDAO gameDAO;
+    private final SQLGameDAO gameDAO;
 
-    public GameService(MemoryGameDAO gameDAO){
+    public GameService(SQLGameDAO gameDAO){
         this.gameDAO = gameDAO;
     }
 

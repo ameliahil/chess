@@ -3,13 +3,13 @@ package service;
 import Requests.LoginRequest;
 import Requests.LoginResponse;
 import dataAccess.DataAccessException;
-import dataAccess.UserDAO;
+import dataAccess.SQLUserDAO;
 import model.UserData;
 
 public class UserService {
-    private final UserDAO userDAO;
+    private final SQLUserDAO userDAO;
 
-    public UserService(UserDAO userDAO){
+    public UserService(SQLUserDAO userDAO){
 
         this.userDAO = userDAO;
     }

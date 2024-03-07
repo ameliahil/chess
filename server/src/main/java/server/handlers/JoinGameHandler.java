@@ -3,8 +3,8 @@ import Requests.JoinRequest;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.ExceptionHandler;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
+import dataAccess.SQLAuthDAO;
+import dataAccess.SQLGameDAO;
 import service.AuthService;
 import service.GameService;
 import spark.Request;
@@ -13,7 +13,7 @@ import spark.Response;
 public class JoinGameHandler {
     private final GameService gameService;
     private final AuthService authService;
-    public JoinGameHandler(MemoryGameDAO gameDAO, MemoryAuthDAO authDAO){
+    public JoinGameHandler(SQLGameDAO gameDAO, SQLAuthDAO authDAO){
         gameService = new GameService(gameDAO);
         authService = new AuthService(authDAO);
     }

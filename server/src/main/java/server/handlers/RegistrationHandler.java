@@ -3,8 +3,8 @@ import Requests.LoginResponse;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.ExceptionHandler;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.SQLAuthDAO;
+import dataAccess.SQLUserDAO;
 import model.UserData;
 import service.AuthService;
 import service.UserService;
@@ -15,7 +15,7 @@ public class RegistrationHandler {
     private final UserService userService;
     private final AuthService authService;
 
-    public RegistrationHandler(MemoryUserDAO userDAO, MemoryAuthDAO authDAO) {
+    public RegistrationHandler(SQLUserDAO userDAO, SQLAuthDAO authDAO) {
         userService = new UserService(userDAO);
         authService = new AuthService(authDAO);
     }

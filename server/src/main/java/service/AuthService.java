@@ -1,16 +1,16 @@
 package service;
 
 import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
+import dataAccess.SQLAuthDAO;
 
 public class AuthService {
-    private final MemoryAuthDAO authDAO;
+    private final SQLAuthDAO authDAO;
 
-    public AuthService(MemoryAuthDAO authDAO){
+    public AuthService(SQLAuthDAO authDAO){
         this.authDAO = authDAO;
     }
 
-    public void clearAuth(){
+    public void clearAuth() throws DataAccessException {
         authDAO.clear();
     }
     public void logout(String authToken) throws DataAccessException{

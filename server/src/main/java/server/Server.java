@@ -7,9 +7,9 @@ import spark.*;
 
 public class Server {
 
-    MemoryUserDAO userDAO = new MemoryUserDAO();
-    MemoryGameDAO gameDAO = new MemoryGameDAO();
-    MemoryAuthDAO authDAO = new MemoryAuthDAO();
+    SQLUserDAO userDAO = new SQLUserDAO();
+    SQLGameDAO gameDAO = new SQLGameDAO();
+    SQLAuthDAO authDAO = new SQLAuthDAO();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
