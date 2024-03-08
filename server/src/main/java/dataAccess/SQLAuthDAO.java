@@ -1,95 +1,67 @@
 package dataAccess;
 
+import com.google.gson.Gson;
 import model.AuthData;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.UUID;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SQLAuthDAO implements AuthDAO{
-    public SQLAuthDAO() {
-        try {
-            configureDatabase();
-        } catch (DataAccessException e) {}
-    }
+    DatabaseManager manager = new DatabaseManager();
+
     public void clear() throws DataAccessException {
-        var statement = "TRUNCATE pet";
-        executeUpdate(statement);;
+        var statement = "TRUNCATE authTokens";
+        manager.executeUpdate(statement);
     }
 
-    private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                }
-                ps.executeUpdate();
 
-                var rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-
-                return 0;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
-    }
-
-    private String createAuthTableString(){
-        return """
-                CREATE TABLE IF NOT EXISTS authTokens(
-                'authToken' varchar2(256) NOT NULL PRIMARY KEY,
-                'username' varchar2(256) NOT NULL,
-                `json` TEXT DEFAULT NULL
-                )
-                """;
-    }
-    public String createAuth(String username){
+    public String createAuth(String username) throws DataAccessException {
         String token = UUID.randomUUID().toString();
         AuthData authToken = new AuthData(token, username);
-        authTokens.put(token,authToken);
+        addAuth(authToken);
         return token;
     }
 
-    private void addAuth(String username, String authToken){
-
+    private void addAuth(AuthData authData) throws DataAccessException {
+        var statement = "INSERT INTO authTokens (authToken, username, json) VALUES (?, ?, ?)";
+        var json = new Gson().toJson(authData);
+        manager.executeUpdate(statement, authData.authToken(), authData.username(), json);
     }
 
-    public void logout(String authToken) throws DataAccessException {}
-        if(authTokens.get(authToken) == null){
+    public void logout(String authToken) throws DataAccessException {
+        /*try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken FROM authTokens WHERE authToken=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, id);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readPet(rs);
+                    }
+                }
+            }
+        }catch(SQLException ex) {
             throw new DataAccessException("Error: unauthorized");
-        }
-        authTokens.remove(authToken);
+        }*/
+        //authTokens.remove(authToken);
     }
 
     public void insertAuth(String username, String authToken){
         AuthData authData = new AuthData(authToken,username);
-        authTokens.put(authToken, authData);
+        //authTokens.put(authToken, authData);
     }
 
     public String getUser(String authToken){
-        return authTokens.get(authToken).username();
+        //return authTokens.get(authToken).username();
+        return null;
     }
 
     public void findAuth(String authToken) throws DataAccessException {
-        if (authTokens.get(authToken) == null) {
+        /*if (authTokens.get(authToken) == null) {
             throw new DataAccessException("Error: unauthorized");
-        }
-    }
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            var statement = createAuthTableString();
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
-            }
-        }catch (SQLException ex) {
-            throw new DataAccessException("Unable to configure database: %s");
-        }
+        }*/
     }
 }

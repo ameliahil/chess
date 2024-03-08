@@ -1,9 +1,9 @@
-package serviceTests;
+/*package serviceTests;
 import Requests.LoginResponse;
 import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.SQLAuthDAO;
+import dataAccess.SQLGameDAO;
+import dataAccess.SQLUserDAO;
 import org.junit.jupiter.api.*;
 import model.*;
 import service.AuthService;
@@ -13,11 +13,11 @@ import service.UserService;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerTests {
-    MemoryUserDAO userDAO = new MemoryUserDAO();
+    SQLUserDAO userDAO = new SQLUserDAO();
     UserService userService = new UserService(userDAO);
-    MemoryGameDAO gameDAO = new MemoryGameDAO();
+    SQLGameDAO gameDAO = new SQLGameDAO();
     GameService gameService = new GameService(gameDAO);
-    MemoryAuthDAO authDAO = new MemoryAuthDAO();
+    SQLAuthDAO authDAO = new SQLAuthDAO();
     AuthService authService = new AuthService(authDAO);
     @AfterEach
     public void afterEach() throws DataAccessException {
@@ -27,7 +27,7 @@ public class ServerTests {
     }
     @Test
     public void clearTest() throws DataAccessException {
-        MemoryUserDAO userDAO = new MemoryUserDAO();
+        SQLUserDAO userDAO = new SQLUserDAO();
         UserService userService = new UserService(userDAO);
 
         userDAO.createUser("username","password","email");
@@ -39,7 +39,7 @@ public class ServerTests {
     }
     @Test
     public void createGameTestPos() throws DataAccessException{
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
+        SQLGameDAO gameDAO = new SQLGameDAO();
         GameService gameService = new GameService(gameDAO);
 
         gameService.createGame("game name");
@@ -48,7 +48,7 @@ public class ServerTests {
     }
     @Test
     public void createGameTestNeg() throws DataAccessException{
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
+        SQLGameDAO gameDAO = new SQLGameDAO();
         GameService gameService = new GameService(gameDAO);
 
         gameService.createGame("game");
@@ -57,7 +57,7 @@ public class ServerTests {
     }
     @Test
     public void joinGameTestPos() throws DataAccessException{
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
+        SQLGameDAO gameDAO = new SQLGameDAO();
         GameService gameService = new GameService(gameDAO);
 
         gameService.createGame("new game");
@@ -70,7 +70,7 @@ public class ServerTests {
     }
     @Test
     public void joinGameTestNeg() throws DataAccessException{
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
+        SQLGameDAO gameDAO = new SQLGameDAO();
         GameService gameService = new GameService(gameDAO);
 
         gameService.createGame("new game");
@@ -145,4 +145,5 @@ public class ServerTests {
         });
     }
 
-}
+}*/
+

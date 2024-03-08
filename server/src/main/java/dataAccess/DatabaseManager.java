@@ -3,6 +3,8 @@ package dataAccess;
 import java.sql.*;
 import java.util.Properties;
 
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+
 public class DatabaseManager {
     private static final String databaseName;
     private static final String user;
@@ -41,7 +43,14 @@ public class DatabaseManager {
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
+
         } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+        try {
+            configureAuthDatabase();
+        }
+        catch (DataAccessException e) {
             throw new DataAccessException(e.getMessage());
         }
     }
@@ -67,4 +76,47 @@ public class DatabaseManager {
             throw new DataAccessException(e.getMessage());
         }
     }
+    public int executeUpdate(String statement, Object... params) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+                for (var i = 0; i < params.length; i++) {
+                    var param = params[i];
+                    if (param instanceof String p) ps.setString(i + 1, p);
+                }
+                ps.executeUpdate();
+
+                var rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+
+                return 0;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
+        }
+    }
+
+    private static void configureAuthDatabase() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = createAuthTableString();
+            try (var preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        }catch (SQLException ex) {
+            throw new DataAccessException("Unable to configure database: %s");
+        }
+    }
+
+    public static String createAuthTableString(){
+        return """
+                CREATE TABLE IF NOT EXISTS authTokens(
+                authToken varchar2(256) NOT NULL PRIMARY KEY,
+                username varchar2(256) NOT NULL,
+                json TEXT DEFAULT NULL
+                )
+                """;
+    }
+
 }
