@@ -49,6 +49,8 @@ public class DatabaseManager {
         }
         try {
             configureAuthDatabase();
+            configureGameDatabase();
+            configureUserDatabase();
         }
         catch (DataAccessException e) {
             throw new DataAccessException(e.getMessage());
@@ -98,7 +100,6 @@ public class DatabaseManager {
     }
 
     private static void configureAuthDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
         try (Connection connection = DatabaseManager.getConnection()) {
             String statement = createAuthTableString();
             try (var preparedStatement = connection.prepareStatement(statement)) {
@@ -114,6 +115,52 @@ public class DatabaseManager {
                 CREATE TABLE IF NOT EXISTS authTokens(
                 authToken varchar2(256) NOT NULL PRIMARY KEY,
                 username varchar2(256) NOT NULL,
+                json TEXT DEFAULT NULL
+                )
+                """;
+    }
+
+    private static void configureUserDatabase() throws DataAccessException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = createUserTableString();
+            try (var preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        }catch (SQLException ex) {
+            throw new DataAccessException("Unable to configure database: %s");
+        }
+    }
+
+    public static String createUserTableString(){
+        return """
+                CREATE TABLE IF NOT EXISTS users(
+                username varchar2(256) NOT NULL PRIMARY KEY,
+                password varchar2(256) NOT NULL,
+                email varchar2(256) NOT NULL,
+                json TEXT DEFAULT NULL
+                )
+                """;
+    }
+
+    private static void configureGameDatabase() throws DataAccessException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = createGameTableString();
+            try (var preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        }catch (SQLException ex) {
+            throw new DataAccessException("Unable to configure database: %s");
+        }
+    }
+
+    public static String createGameTableString(){
+        return """
+                CREATE TABLE IF NOT EXISTS authTokens(
+                gameID int NOT NULL PRIMARY KEY
+                whiteUsername varchar2(256) DEFAULT NULL,
+                blackUsername varchar2(256) DEFAULT NULL,
+                gameName varchar2(256) NOT NULL,
+                implementation TEXT DEFAULT NULL,
                 json TEXT DEFAULT NULL
                 )
                 """;

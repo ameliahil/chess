@@ -33,25 +33,18 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     public void logout(String authToken) throws DataAccessException {
-        /*try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken FROM authTokens WHERE authToken=?";
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "DELETE FROM authTokens WHERE authToken=?";
             try (var ps = conn.prepareStatement(statement)) {
-                ps.setInt(1, id);
-                try (var rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        return readPet(rs);
-                    }
+                ps.setString(1, authToken);
+                int rowsAffected = ps.executeUpdate();
+                if (rowsAffected == 0) {
+                    throw new DataAccessException("Error: unauthorized");
                 }
             }
-        }catch(SQLException ex) {
-            throw new DataAccessException("Error: unauthorized");
-        }*/
-        //authTokens.remove(authToken);
-    }
-
-    public void insertAuth(String username, String authToken){
-        AuthData authData = new AuthData(authToken,username);
-        //authTokens.put(authToken, authData);
+        }catch(SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public String getUser(String authToken){
@@ -59,9 +52,4 @@ public class SQLAuthDAO implements AuthDAO{
         return null;
     }
 
-    public void findAuth(String authToken) throws DataAccessException {
-        /*if (authTokens.get(authToken) == null) {
-            throw new DataAccessException("Error: unauthorized");
-        }*/
-    }
 }
