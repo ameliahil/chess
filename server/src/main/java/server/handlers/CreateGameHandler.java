@@ -2,10 +2,7 @@ package server.handlers;
 import Requests.CreateGameRequest;
 import Requests.CreateGameResponse;
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import dataAccess.ExceptionHandler;
-import dataAccess.SQLAuthDAO;
-import dataAccess.SQLGameDAO;
+import dataAccess.*;
 import service.AuthService;
 import service.GameService;
 import spark.Request;
@@ -23,7 +20,9 @@ public class CreateGameHandler {
         CreateGameRequest gameName = new Gson().fromJson(req.body(), CreateGameRequest.class);
         String auth = req.headers("Authorization");
         CreateGameResponse createGame;
-        try{authService.findAuth(auth);}
+        try{
+            DatabaseManager.createDatabase();
+            authService.findAuth(auth);}
         catch(DataAccessException error){
             ExceptionHandler exception = new ExceptionHandler(error.getMessage());
             res.status(exception.findException());

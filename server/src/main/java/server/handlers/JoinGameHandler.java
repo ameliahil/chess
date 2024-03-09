@@ -1,10 +1,7 @@
 package server.handlers;
 import Requests.JoinRequest;
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import dataAccess.ExceptionHandler;
-import dataAccess.SQLAuthDAO;
-import dataAccess.SQLGameDAO;
+import dataAccess.*;
 import service.AuthService;
 import service.GameService;
 import spark.Request;
@@ -20,7 +17,9 @@ public class JoinGameHandler {
     public Object joinGame(Request req, Response res) throws DataAccessException {
         String auth = req.headers("Authorization");
         JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
-        try{authService.findAuth(auth);}
+        try{
+            DatabaseManager.createDatabase();
+            authService.findAuth(auth);}
         catch(DataAccessException error){
             ExceptionHandler exception = new ExceptionHandler(error.getMessage());
             res.status(exception.findException());

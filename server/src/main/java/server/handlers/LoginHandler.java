@@ -2,10 +2,7 @@ package server.handlers;
 import Requests.LoginRequest;
 import Requests.LoginResponse;
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import dataAccess.ExceptionHandler;
-import dataAccess.SQLAuthDAO;
-import dataAccess.SQLUserDAO;
+import dataAccess.*;
 import service.AuthService;
 import service.UserService;
 import spark.Request;
@@ -23,7 +20,10 @@ public class LoginHandler {
     public Object login(Request req, Response res) throws DataAccessException {
         LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
         LoginResponse loginResponse;
-        try{loginResponse = userService.login(loginRequest);}
+        try{
+            DatabaseManager.createDatabase();
+            loginResponse = userService.login(loginRequest);
+        }
         catch (DataAccessException error){
             ExceptionHandler exception = new ExceptionHandler(error.getMessage());
             res.status(exception.findException());

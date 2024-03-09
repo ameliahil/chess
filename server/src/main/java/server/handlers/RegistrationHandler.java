@@ -1,10 +1,7 @@
 package server.handlers;
 import Requests.LoginResponse;
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import dataAccess.ExceptionHandler;
-import dataAccess.SQLAuthDAO;
-import dataAccess.SQLUserDAO;
+import dataAccess.*;
 import model.UserData;
 import service.AuthService;
 import service.UserService;
@@ -24,6 +21,7 @@ public class RegistrationHandler {
         UserData user = new Gson().fromJson(req.body(), UserData.class);
         LoginResponse login;
         try {
+            DatabaseManager.createDatabase();
             login = userService.addUser(user);
         }
         catch (DataAccessException error){

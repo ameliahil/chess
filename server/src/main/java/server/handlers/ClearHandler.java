@@ -1,9 +1,7 @@
 package server.handlers;
 
-import dataAccess.DataAccessException;
-import dataAccess.SQLAuthDAO;
-import dataAccess.SQLGameDAO;
-import dataAccess.SQLUserDAO;
+import com.google.gson.Gson;
+import dataAccess.*;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -32,6 +30,14 @@ public class ClearHandler {
     }
 
     public Object clear(Request req, Response res) throws DataAccessException {
+        try{
+            DatabaseManager.createDatabase();
+        }
+        catch(DataAccessException error){
+            ExceptionHandler exception = new ExceptionHandler(error.getMessage());
+            res.status(exception.findException());
+            return new Gson().toJson(exception);
+        }
         authService.clearAuth();
         gameService.clearGame();
         userService.clearUser();

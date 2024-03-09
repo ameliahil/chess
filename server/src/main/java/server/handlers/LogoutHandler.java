@@ -1,6 +1,7 @@
 package server.handlers;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
+import dataAccess.DatabaseManager;
 import dataAccess.ExceptionHandler;
 import dataAccess.SQLAuthDAO;
 import service.AuthService;
@@ -14,7 +15,10 @@ public class LogoutHandler {
     }
     public Object logout(Request req, Response res) {
         String auth = req.headers("Authorization");
-        try{authService.logout(auth);}
+        try{
+            authService.logout(auth);
+            DatabaseManager.createDatabase();
+        }
         catch (DataAccessException error){
             ExceptionHandler exception = new ExceptionHandler(error.getMessage());
             res.status(exception.findException());
