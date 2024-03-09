@@ -5,30 +5,44 @@ import Requests.ListGamesResponse;
 import chess.ChessGame;
 import model.GameData;
 
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class SQLGameDAO implements GameDAO {
-    public HashMap<Integer, GameData> games = new HashMap<>(); //gameName or gameID
-    HashMap<String, GameData> gameNames = new HashMap<>();
-    HashSet<Integer> gameIDList = new HashSet<>();
-    int currID = -1;
-    public void clear(){
-        games.clear();
-        gameIDList.clear();
-        gameNames.clear();
+    DatabaseManager manager = new DatabaseManager();
+    public void clear() throws DataAccessException {
+        var statement = "TRUNCATE games";
+        manager.executeUpdate(statement);
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
-        if(gameNames.get(gameName) != null){
-            throw new DataAccessException("Error:");
+        int gameID;
+        try(var conn = DatabaseManager.getConnection()){
+            var statement = "INSERT INTO games (id, whiteUsername, blackUsername, gameName) VALUES (?, ?, ?, ?)";
+            try(var ps = conn.prepareStatement(statement)){
+                ps.setString(1, whiteUsername);
+                ps.setString(2, blackUsername);
+                ps.setString(3, gameName);
+                ps.executeUpdate();
+
+                try(var rs = ps.getGeneratedKeys()){
+                    if(rs.next()){
+                        gameID = rs.getInt(1);
+                    }
+                    else {
+                        throw new DataAccessException("Error: could not retrieve generated gameID");
+                    }
+                }
+            }
         }
-        int gameID = assignGameID();
+        catch(SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
         ChessGame implementation = new ChessGame();
-        GameData game = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
-        games.put(gameID, game);
-        gameNames.put(gameName,game);
-        gameIDList.add(gameID);
+        GameData gameData = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
+        json =
+        var gameID = executeUpdate(statement, whiteUsername, blackUsername, json);
         return new CreateGameResponse(gameID);
     }
     public GameData getGame(int gameID){

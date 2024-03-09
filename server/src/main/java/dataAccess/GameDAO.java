@@ -7,7 +7,7 @@ import model.GameData;
 import java.util.Collection;
 
 public interface GameDAO {
-    void clear();
+    void clear() throws DataAccessException;
     CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException;
     GameData getGame(int gameID);
     Collection<ListGamesResponse> listGames() throws DataAccessException;
