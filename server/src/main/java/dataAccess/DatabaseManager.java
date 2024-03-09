@@ -106,15 +106,15 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
         }catch (SQLException ex) {
-            throw new DataAccessException("Unable to configure database: %s");
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 
     public static String createAuthTableString(){
         return """
                 CREATE TABLE IF NOT EXISTS authTokens(
-                authToken varchar2(256) NOT NULL PRIMARY KEY,
-                username varchar2(256) NOT NULL,
+                authToken varchar(256) NOT NULL PRIMARY KEY,
+                username varchar(256) NOT NULL,
                 json TEXT DEFAULT NULL
                 )
                 """;
@@ -127,16 +127,16 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
         }catch (SQLException ex) {
-            throw new DataAccessException("Unable to configure database: %s");
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 
     public static String createUserTableString(){
         return """
                 CREATE TABLE IF NOT EXISTS users(
-                username varchar2(256) NOT NULL PRIMARY KEY,
-                password varchar2(256) NOT NULL,
-                email varchar2(256) NOT NULL,
+                username varchar(256) NOT NULL PRIMARY KEY,
+                password varchar(256) NOT NULL,
+                email varchar(256) NOT NULL,
                 json TEXT DEFAULT NULL
                 )
                 """;
@@ -149,17 +149,17 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
         }catch (SQLException ex) {
-            throw new DataAccessException("Unable to configure database: %s");
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 
     public static String createGameTableString(){
         return """
-                CREATE TABLE IF NOT EXISTS authTokens(
-                gameID int NOT NULL PRIMARY KEY
-                whiteUsername varchar2(256) DEFAULT NULL,
-                blackUsername varchar2(256) DEFAULT NULL,
-                gameName varchar2(256) NOT NULL,
+                CREATE TABLE IF NOT EXISTS games(
+                gameID int NOT NULL PRIMARY KEY,
+                whiteUsername varchar(256) DEFAULT NULL,
+                blackUsername varchar(256) DEFAULT NULL,
+                gameName varchar(256) NOT NULL,
                 implementation TEXT DEFAULT NULL,
                 json TEXT DEFAULT NULL
                 )

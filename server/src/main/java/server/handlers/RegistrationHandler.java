@@ -20,7 +20,7 @@ public class RegistrationHandler {
         authService = new AuthService(authDAO);
     }
 
-    public Object register(Request req, Response res) {
+    public Object register(Request req, Response res) throws DataAccessException {
         UserData user = new Gson().fromJson(req.body(), UserData.class);
         LoginResponse login;
         try {
