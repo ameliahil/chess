@@ -112,7 +112,7 @@ public class SQLGameDAO implements GameDAO {
                     if (rs.next()) {
                         String data = rs.getString("json");
                         GameData gameData = new Gson().fromJson(data,GameData.class);
-                        GameData newGameData = new GameData(gameData.gameID(),username,gameData.blackUsername(),gameData.gameName(),gameData.implementation());
+                        GameData newGameData = new GameData(gameData.gameID(),gameData.whiteUsername(),username,gameData.gameName(),gameData.implementation());
                         String newJson = new Gson().toJson(newGameData);
                         var updateStatement = "UPDATE games SET json = ? WHERE gameID = ?";
                         try (var updatePs = conn.prepareStatement(updateStatement)) {
@@ -201,7 +201,7 @@ public class SQLGameDAO implements GameDAO {
             try (var selectPs = conn.prepareStatement(statement)) {
                 try (var rs = selectPs.executeQuery()) {
                     if (!rs.next()) {
-                        var insertStatement = "INSERT INTO autoIncrement (currID, lineNum) VALUES(1, 1)";
+                        var insertStatement = "INSERT INTO autoIncrement (currID, lineNum) VALUES(2, 1)";
                         try (var insertPs = conn.prepareStatement(insertStatement)){
                             insertPs.executeUpdate();
                             return 1;
