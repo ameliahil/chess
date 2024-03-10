@@ -21,7 +21,7 @@ public class AuthService {
     }
 
     public void insertAuth(String username, String authToken) throws DataAccessException {
-        authDAO.addAuth(username,authToken);
+        authDAO.addAuth(authToken,username);
     }
 
     public void findAuth(String auth) throws DataAccessException {

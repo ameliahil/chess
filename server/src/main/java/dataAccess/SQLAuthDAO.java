@@ -2,6 +2,8 @@ package dataAccess;
 
 import com.google.gson.Gson;
 import model.AuthData;
+import model.UserData;
+
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -21,10 +23,30 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     public void addAuth(String authToken, String username) throws DataAccessException {
-        AuthData authData = new AuthData(authToken, username);
-        var statement = "INSERT INTO authTokens (authToken, username, json) VALUES (?, ?, ?)";
-        var json = new Gson().toJson(authData);
-        manager.executeUpdate(statement, authData.authToken(), authData.username(), json);
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken from authTokens WHERE authToken=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (var rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        var updateStatement = "INSERT INTO authTokens (authToken, username, json) VALUES (?, ?, ?)";
+                        try (var updatePs = conn.prepareStatement(updateStatement)) {
+                            AuthData authData = new AuthData(authToken, username);
+                            var json = new Gson().toJson(authData);
+                            updatePs.setString(1, authToken);
+                            updatePs.setString(2, username);
+                            updatePs.setString(3, json);
+                            updatePs.executeUpdate();
+                        }
+                    } else {
+                        throw new DataAccessException("Error: already taken");
+                    }
+                }
+            }
+        }
+        catch (SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public void logout(String authToken) throws DataAccessException {
