@@ -3,8 +3,11 @@ package dataAccess;
 import Requests.CreateGameResponse;
 import Requests.ListGamesResponse;
 import chess.ChessGame;
+import com.google.gson.Gson;
 import model.GameData;
 
+import javax.xml.crypto.Data;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,6 +21,7 @@ public class SQLGameDAO implements GameDAO {
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
         int gameID;
+        ChessGame implementation = new ChessGame();
         try(var conn = DatabaseManager.getConnection()){
             var statement = "INSERT INTO games (id, whiteUsername, blackUsername, gameName) VALUES (?, ?, ?, ?)";
             try(var ps = conn.prepareStatement(statement)){
@@ -25,7 +29,6 @@ public class SQLGameDAO implements GameDAO {
                 ps.setString(2, blackUsername);
                 ps.setString(3, gameName);
                 ps.executeUpdate();
-
                 try(var rs = ps.getGeneratedKeys()){
                     if(rs.next()){
                         gameID = rs.getInt(1);
@@ -34,70 +37,173 @@ public class SQLGameDAO implements GameDAO {
                         throw new DataAccessException("Error: could not retrieve generated gameID");
                     }
                 }
+                GameData gameData = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
+                var json = new Gson().toJson(gameData);
+                var updateStatement = "UPDATE games SET json = ? WHERE id = ?";
+                try(var updatePs = conn.prepareStatement(updateStatement)){
+                    updatePs.setString(1, json);
+                    updatePs.setInt(2, gameID);
+                    updatePs.executeUpdate();
+                }
             }
         }
         catch(SQLException e){
             throw new DataAccessException(e.getMessage());
         }
-        ChessGame implementation = new ChessGame();
-        GameData gameData = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
-        json =
-        var gameID = executeUpdate(statement, whiteUsername, blackUsername, json);
         return new CreateGameResponse(gameID);
     }
-    public GameData getGame(int gameID){
-        return games.get(gameID);
+    public GameData getGame(int gameID) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT json from games WHERE gameID=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new DataAccessException("Error: unauthorized");
+                    }
+                    var json = rs.getString("json");
+                    return new Gson().fromJson(json, GameData.class);
+                }
+            }
+        }
+        catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
-    public Collection<ListGamesResponse> listGames() {
+    public Collection<ListGamesResponse> listGames() throws DataAccessException {
         HashSet<ListGamesResponse> gameList = new HashSet<>();
-        for(int gameID: gameIDList){
-            GameData currGame = games.get(gameID);
-            gameList.add(new ListGamesResponse(currGame.gameID(),currGame.whiteUsername(),currGame.blackUsername(),currGame.gameName()));
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT json from games";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String value = rs.getString("json");
+                        var newJson = new Gson().fromJson(value, ListGamesResponse.class);
+                        gameList.add(new ListGamesResponse(newJson.gameID(), newJson.whiteUsername(),newJson.blackUsername(), newJson.gameName()));
+                    }
+                }
+            }
+        }
+        catch(SQLException e){
+            throw new DataAccessException(e.getMessage());
         }
         return gameList;
     }
 
     public void updateBlackUsername(int gameID, String username) throws DataAccessException{
-        GameData game = getGame(gameID);
-        if(game.blackUsername() != null){
-            throw new DataAccessException("Error: already taken");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT blackUsername from games WHERE gameID=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String data = rs.getString("blackUsername");
+                        if(data == null){
+                            var updateStatement = "UPDATE games SET blackUsername = ? WHERE gameID = ?";
+                            try (var updatePs = conn.prepareStatement(updateStatement)) {
+                                updatePs.setString(1, username);
+                                updatePs.executeUpdate();
+                            }
+                        }
+                        else{
+                            throw new DataAccessException("Error: already taken");
+                        }
+                    }
+                }
+            }
+            var jsonStatement = "SELECT json from games WHERE gameID=?";
+            try (var ps = conn.prepareStatement(jsonStatement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String data = rs.getString("json");
+                        GameData gameData = new Gson().fromJson(data,GameData.class);
+                        GameData newGameData = new GameData(gameData.gameID(),gameData.whiteUsername(),username,gameData.gameName(),gameData.implementation());
+                        String newJson = new Gson().toJson(newGameData);
+                        if(data == null){
+                            var updateStatement = "UPDATE games SET json = ? WHERE gameID = ?";
+                            try (var updatePs = conn.prepareStatement(updateStatement)) {
+                                updatePs.setString(1, newJson);
+                                updatePs.setInt(2,gameID);
+                                updatePs.executeUpdate();
+                            }
+                        }
+                        else{
+                            throw new DataAccessException("Error: already taken");
+                        }
+                    }
+                }
+            }
         }
-        if(games.get(gameID) == null){
-            throw new DataAccessException("Error: bad request");
+        catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
         }
-        GameData newGame = new GameData(gameID,game.whiteUsername(),username,game.gameName(),game.implementation());
-        games.remove(gameID);
-        games.put(gameID,newGame);
     }
 
     public void updateWhiteUsername(int gameID, String username) throws DataAccessException{
-        GameData game = getGame(gameID);
-        if(game == null){
-            throw new DataAccessException(("Error: bad request"));
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT whiteUsername from games WHERE gameID=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String data = rs.getString("whiteUsername");
+                        if(data == null){
+                            var updateStatement = "UPDATE games SET whiteUsername = ? WHERE gameID = ?";
+                            try (var updatePs = conn.prepareStatement(updateStatement)) {
+                                updatePs.setString(1, username);
+                                updatePs.executeUpdate();
+                            }
+                        }
+                        else{
+                            throw new DataAccessException("Error: already taken");
+                        }
+                    }
+                }
+            }
+            var jsonStatement = "SELECT json from games WHERE gameID=?";
+            try (var ps = conn.prepareStatement(jsonStatement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String data = rs.getString("json");
+                        GameData gameData = new Gson().fromJson(data,GameData.class);
+                        GameData newGameData = new GameData(gameData.gameID(),username,gameData.blackUsername(),gameData.gameName(),gameData.implementation());
+                        String newJson = new Gson().toJson(newGameData);
+                        if(data == null){
+                            var updateStatement = "UPDATE games SET json = ? WHERE gameID = ?";
+                            try (var updatePs = conn.prepareStatement(updateStatement)) {
+                                updatePs.setInt(2,gameID);
+                                updatePs.setString(1, newJson);
+                                updatePs.executeUpdate();
+                            }
+                        }
+                        else{
+                            throw new DataAccessException("Error: already taken");
+                        }
+                    }
+                }
+            }
         }
-        if(game.whiteUsername() != null){
-            throw new DataAccessException("Error: already taken");
+        catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
         }
-        if(games.get(gameID) == null){
-            throw new DataAccessException("Error: bad request");
-        }
-        GameData newGame = new GameData(gameID,username,game.blackUsername(),game.gameName(),game.implementation());
-        games.remove(gameID);
-        games.put(gameID,newGame);
     }
 
-    private int assignGameID(){
-        updateGameIDList();
-        return currID;
-    }
 
-    private void updateGameIDList(){
-        currID += 1;
-    }
-
-    public void watch(int gameID) throws DataAccessException{
-        if(games.get(gameID) == null){
-            throw new DataAccessException("Error: bad request");
+    public void watch(int gameID) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameID from games WHERE gameID=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new DataAccessException("Error: bad request");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
         }
     }
 }

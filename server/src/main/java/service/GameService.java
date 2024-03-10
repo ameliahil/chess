@@ -15,7 +15,7 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-    public void clearGame(){
+    public void clearGame() throws DataAccessException {
         gameDAO.clear();
     }
 
