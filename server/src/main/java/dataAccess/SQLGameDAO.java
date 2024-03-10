@@ -23,7 +23,7 @@ public class SQLGameDAO implements GameDAO {
         int gameID;
         ChessGame implementation = new ChessGame();
         try(var conn = DatabaseManager.getConnection()){
-            var statement = "INSERT INTO games (id, whiteUsername, blackUsername, gameName) VALUES (?, ?, ?, ?)";
+            var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)";
             try(var ps = conn.prepareStatement(statement)){
                 ps.setString(1, whiteUsername);
                 ps.setString(2, blackUsername);

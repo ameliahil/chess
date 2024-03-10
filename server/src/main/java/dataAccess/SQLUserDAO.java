@@ -14,6 +14,9 @@ public class SQLUserDAO implements UserDAO{
         manager.executeUpdate(statement);
     }
     public LoginResponse createUser(String username, String password, String email) throws DataAccessException{
+        if(username == null || password == null || email == null){
+            throw new DataAccessException("Error: bad request");
+        }
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT username from users WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
