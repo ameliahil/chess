@@ -93,6 +93,7 @@ public class SQLGameDAO implements GameDAO {
                             var updateStatement = "UPDATE games SET blackUsername = ? WHERE gameID = ?";
                             try (var updatePs = conn.prepareStatement(updateStatement)) {
                                 updatePs.setString(1, username);
+                                updatePs.setInt(2,gameID);
                                 updatePs.executeUpdate();
                             }
                         }
@@ -143,6 +144,7 @@ public class SQLGameDAO implements GameDAO {
                             var updateStatement = "UPDATE games SET whiteUsername = ? WHERE gameID = ?";
                             try (var updatePs = conn.prepareStatement(updateStatement)) {
                                 updatePs.setString(1, username);
+                                updatePs.setInt(2,gameID);
                                 updatePs.executeUpdate();
                             }
                         }
