@@ -19,6 +19,8 @@ public class SQLGameDAO implements GameDAO {
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE games";
         manager.executeUpdate(statement);
+        var newStatement = "TRUNCATE autoIncrement";
+        manager.executeUpdate(newStatement);
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
         int gameID = findCurrID();
@@ -110,18 +112,13 @@ public class SQLGameDAO implements GameDAO {
                     if (rs.next()) {
                         String data = rs.getString("json");
                         GameData gameData = new Gson().fromJson(data,GameData.class);
-                        GameData newGameData = new GameData(gameData.gameID(),gameData.whiteUsername(),username,gameData.gameName(),gameData.implementation());
+                        GameData newGameData = new GameData(gameData.gameID(),username,gameData.blackUsername(),gameData.gameName(),gameData.implementation());
                         String newJson = new Gson().toJson(newGameData);
-                        if(data == null){
-                            var updateStatement = "UPDATE games SET json = ? WHERE gameID = ?";
-                            try (var updatePs = conn.prepareStatement(updateStatement)) {
-                                updatePs.setString(1, newJson);
-                                updatePs.setInt(2,gameID);
-                                updatePs.executeUpdate();
-                            }
-                        }
-                        else{
-                            throw new DataAccessException("Error: already taken");
+                        var updateStatement = "UPDATE games SET json = ? WHERE gameID = ?";
+                        try (var updatePs = conn.prepareStatement(updateStatement)) {
+                            updatePs.setString(1, newJson);
+                            updatePs.setInt(2,gameID);
+                            updatePs.executeUpdate();
                         }
                     }
                 }
@@ -151,6 +148,9 @@ public class SQLGameDAO implements GameDAO {
                         else{
                             throw new DataAccessException("Error: already taken");
                         }
+                    }
+                    else{
+                        throw new DataAccessException("Error: bad request");
                     }
                 }
             }
