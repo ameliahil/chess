@@ -10,7 +10,7 @@ import java.util.UUID;
 public class SQLUserDAO implements UserDAO{
     DatabaseManager manager = new DatabaseManager();
     public void clear() throws DataAccessException {
-        var statement = "TRUNCATE games";
+        var statement = "TRUNCATE users";
         manager.executeUpdate(statement);
     }
     public LoginResponse createUser(String username, String password, String email) throws DataAccessException{
