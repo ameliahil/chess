@@ -144,7 +144,7 @@ public class SQLGameDAO implements GameDAO {
                             var updateStatement = "UPDATE games SET whiteUsername = ? WHERE gameID = ?";
                             try (var updatePs = conn.prepareStatement(updateStatement)) {
                                 updatePs.setString(1, username);
-                                updatePs.setInt(2,gameID);
+                                updatePs.setInt(2, gameID);
                                 updatePs.executeUpdate();
                             }
                         }
@@ -163,16 +163,11 @@ public class SQLGameDAO implements GameDAO {
                         GameData gameData = new Gson().fromJson(data,GameData.class);
                         GameData newGameData = new GameData(gameData.gameID(),username,gameData.blackUsername(),gameData.gameName(),gameData.implementation());
                         String newJson = new Gson().toJson(newGameData);
-                        if(data == null){
-                            var updateStatement = "UPDATE games SET json = ? WHERE gameID = ?";
-                            try (var updatePs = conn.prepareStatement(updateStatement)) {
-                                updatePs.setInt(2,gameID);
-                                updatePs.setString(1, newJson);
-                                updatePs.executeUpdate();
-                            }
-                        }
-                        else{
-                            throw new DataAccessException("Error: already taken");
+                        var updateStatement = "UPDATE games SET json = ? WHERE gameID = ?";
+                        try (var updatePs = conn.prepareStatement(updateStatement)) {
+                            updatePs.setInt(2,gameID);
+                            updatePs.setString(1, newJson);
+                            updatePs.executeUpdate();
                         }
                     }
                 }
