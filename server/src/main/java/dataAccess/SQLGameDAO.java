@@ -21,34 +21,21 @@ public class SQLGameDAO implements GameDAO {
         manager.executeUpdate(statement);
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
-        int gameID = 0;
+        int gameID = findCurrID();
         ChessGame implementation = new ChessGame();
         String jsonGame = new Gson().toJson(implementation);
+        GameData gameData = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
+        var json = new Gson().toJson(gameData);
         try(var conn = DatabaseManager.getConnection()){
-            var statement = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, implementation) VALUES (?, ?, ?, ?, ?)";
+            var statement = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, implementation, json) VALUES (?, ?, ?, ?, ?, ?)";
             try(var ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)){
-                ps.setInt(1, 1);
+                ps.setInt(1, gameID);
                 ps.setString(2, whiteUsername);
                 ps.setString(3, blackUsername);
                 ps.setString(4, gameName);
                 ps.setObject(5, jsonGame);
+                ps.setObject(6, json);
                 ps.executeUpdate();
-                try(var rs = ps.getGeneratedKeys()){
-                    if(rs.next()){
-                        gameID = rs.getInt(1);
-                    }
-                    else {
-                        throw new DataAccessException("Error: could not retrieve generated gameID");
-                    }
-                }
-                GameData gameData = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
-                var json = new Gson().toJson(gameData);
-                var updateStatement = "UPDATE games SET json = ? WHERE id = ?";
-                try(var updatePs = conn.prepareStatement(updateStatement)){
-                    updatePs.setString(1, json);
-                    updatePs.setInt(2, gameID);
-                    updatePs.executeUpdate();
-                }
             }
         }
         catch(SQLException e){
@@ -203,6 +190,33 @@ public class SQLGameDAO implements GameDAO {
                 try (var rs = ps.executeQuery()) {
                     if (!rs.next()) {
                         throw new DataAccessException("Error: bad request");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: bad request");
+        }
+    }
+
+    private int findCurrID() throws DataAccessException{
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT currID from autoIncrement WHERE lineNum=1";
+            try (var selectPs = conn.prepareStatement(statement)) {
+                try (var rs = selectPs.executeQuery()) {
+                    if (!rs.next()) {
+                        var insertStatement = "INSERT INTO autoIncrement (currID, lineNum) VALUES(1, 1)";
+                        try (var insertPs = conn.prepareStatement(insertStatement)){
+                            insertPs.executeUpdate();
+                            return 1;
+                        }
+                    }
+                    else{
+                        int currID = rs.getInt("currID");
+                        var updateStatement = "UPDATE autoIncrement SET currID = currID + 1";
+                        try(var updatePs = conn.prepareStatement(updateStatement)){
+                            updatePs.executeUpdate();
+                            return currID;
+                        }
                     }
                 }
             }

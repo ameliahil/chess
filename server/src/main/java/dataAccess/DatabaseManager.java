@@ -52,6 +52,7 @@ public class DatabaseManager {
             configureAuthDatabase();
             configureUserDatabase();
             configureGameDatabase();
+            autoIncrement();
         }
         catch (DataAccessException e) {
             throw new DataAccessException(e.getMessage());
@@ -159,7 +160,7 @@ public class DatabaseManager {
     public static String createGameTableString(){
         return """
                 CREATE TABLE IF NOT EXISTS games(
-                gameID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                gameID int NOT NULL PRIMARY KEY,
                 whiteUsername varchar(256) DEFAULT NULL,
                 blackUsername varchar(256) DEFAULT NULL,
                 gameName varchar(256) NOT NULL,
@@ -169,4 +170,23 @@ public class DatabaseManager {
                 """;
     }
 
+    private static void autoIncrement() throws DataAccessException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = autoIncrementString();
+            try (var preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        }catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+    }
+
+    public static String autoIncrementString(){
+        return """
+                CREATE TABLE IF NOT EXISTS autoIncrement(
+                currID int NOT NULL PRIMARY KEY,
+                lineNum int NOT NULL
+                )
+                """;
+    }
 }
