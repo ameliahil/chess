@@ -1,37 +1,94 @@
 package dataAccess;
 
 import Requests.LoginResponse;
+import com.google.gson.Gson;
 import model.UserData;
-
-import java.util.HashMap;
-import java.util.Objects;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
 
 public class SQLUserDAO implements UserDAO{
-    public HashMap<String, UserData> users = new HashMap<>();
-    public void clear(){
-        users.clear();
+    DatabaseManager manager = new DatabaseManager();
+    public void clear() throws DataAccessException {
+        var statement = "TRUNCATE games";
+        manager.executeUpdate(statement);
     }
     public LoginResponse createUser(String username, String password, String email) throws DataAccessException{
-        if(users.get(username) != null){
-            throw new DataAccessException("Error: already taken");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username from users WHERE username=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String data = rs.getString("username");
+                        if(data == null){
+                            var updateStatement = "INSERT INTO users (username, password, email, json) VALUES (?, ?, ?)";
+                            try (var updatePs = conn.prepareStatement(updateStatement)) {
+                                updatePs.setString(1, username);
+                                updatePs.setString(2,password);
+                                updatePs.setString(3,email);
+                                UserData userData = new UserData(username,password,email);
+                                var json = new Gson().toJson(userData);
+                                updatePs.setString(4,json);
+                                updatePs.executeUpdate();
+                            }
+                        }
+                        else{
+                            throw new DataAccessException("Error: already taken");
+                        }
+                    }
+                }
+            }
         }
-        if(username == null || password == null || email == null){
-            throw new DataAccessException("Error: bad request");
+        catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
         }
-        UserData newUser = new UserData(username,password,email);
-        users.put(username,newUser);
         return new LoginResponse(username, createAuth());
     }
     public LoginResponse login(String username, String password) throws DataAccessException {
-        if(users.get(username) == null || !Objects.equals(users.get(username).password(), password)){
-            throw new DataAccessException("Error: unauthorized");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT password from users WHERE username=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (var rs = ps.executeQuery()) {
+                    if(rs.next()){
+                        String realPassword = rs.getString("password");
+                        if(password.equals(realPassword)){
+                            return new LoginResponse(username, createAuth());
+                        }
+                        else{
+                            throw new DataAccessException("Error: unauthorized");
+                        }
+                    }
+                    else{
+                        throw new DataAccessException("Error: unauthorized");
+                    }
+                }
+            }
         }
-        return new LoginResponse(username, createAuth());
+        catch(SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
-    public UserData getUser(String username){
-        return users.get(username);
+    public UserData getUser(String username) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT json from users WHERE username=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String value = rs.getString("json");
+                        return new Gson().fromJson(value, UserData.class);
+                    }
+                    else{
+                        throw new DataAccessException("STOP, LITERALLY STOP");
+                    }
+                }
+            }
+        }
+        catch(SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public String createAuth() {

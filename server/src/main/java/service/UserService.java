@@ -14,7 +14,7 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public void clearUser(){
+    public void clearUser() throws DataAccessException {
         userDAO.clear();
     }
 
