@@ -19,23 +19,19 @@ public class SQLUserDAO implements UserDAO{
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        String data = rs.getString("username");
-                        if(data == null){
-                            var updateStatement = "INSERT INTO users (username, password, email, json) VALUES (?, ?, ?)";
-                            try (var updatePs = conn.prepareStatement(updateStatement)) {
-                                updatePs.setString(1, username);
-                                updatePs.setString(2,password);
-                                updatePs.setString(3,email);
-                                UserData userData = new UserData(username,password,email);
-                                var json = new Gson().toJson(userData);
-                                updatePs.setString(4,json);
-                                updatePs.executeUpdate();
-                            }
+                    if (!rs.next()) {
+                        var updateStatement = "INSERT INTO users (username, password, email, json) VALUES (?, ?, ?, ?)";
+                        try (var updatePs = conn.prepareStatement(updateStatement)) {
+                            updatePs.setString(1, username);
+                            updatePs.setString(2,password);
+                            updatePs.setString(3,email);
+                            UserData userData = new UserData(username,password,email);
+                            var json = new Gson().toJson(userData);
+                            updatePs.setString(4,json);
+                            updatePs.executeUpdate();
                         }
-                        else{
-                            throw new DataAccessException("Error: already taken");
-                        }
+                    } else {
+                        throw new DataAccessException("Error: already taken");
                     }
                 }
             }
