@@ -9,6 +9,7 @@ import model.GameData;
 import javax.xml.crypto.Data;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,14 +21,17 @@ public class SQLGameDAO implements GameDAO {
         manager.executeUpdate(statement);
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
-        int gameID;
+        int gameID = 0;
         ChessGame implementation = new ChessGame();
+        String jsonGame = new Gson().toJson(implementation);
         try(var conn = DatabaseManager.getConnection()){
-            var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)";
-            try(var ps = conn.prepareStatement(statement)){
-                ps.setString(1, whiteUsername);
-                ps.setString(2, blackUsername);
-                ps.setString(3, gameName);
+            var statement = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, implementation) VALUES (?, ?, ?, ?, ?)";
+            try(var ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)){
+                ps.setInt(1, 1);
+                ps.setString(2, whiteUsername);
+                ps.setString(3, blackUsername);
+                ps.setString(4, gameName);
+                ps.setObject(5, jsonGame);
                 ps.executeUpdate();
                 try(var rs = ps.getGeneratedKeys()){
                     if(rs.next()){

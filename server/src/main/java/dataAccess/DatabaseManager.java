@@ -159,7 +159,7 @@ public class DatabaseManager {
     public static String createGameTableString(){
         return """
                 CREATE TABLE IF NOT EXISTS games(
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                gameID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 whiteUsername varchar(256) DEFAULT NULL,
                 blackUsername varchar(256) DEFAULT NULL,
                 gameName varchar(256) NOT NULL,
