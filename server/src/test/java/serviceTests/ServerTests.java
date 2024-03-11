@@ -1,7 +1,6 @@
 package serviceTests;
 import Requests.JoinRequest;
 import Requests.ListGamesResponse;
-import Requests.ListGamesResponseList;
 import Requests.LoginResponse;
 import chess.ChessGame;
 import dataAccess.DataAccessException;
@@ -11,8 +10,6 @@ import model.*;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
-
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 

@@ -90,7 +90,7 @@ public class SQLUserDAO implements UserDAO{
         }
     }
 
-    public String createAuth() {
+    private String createAuth() {
         return UUID.randomUUID().toString();
     }
 }

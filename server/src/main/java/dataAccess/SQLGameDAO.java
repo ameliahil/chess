@@ -67,7 +67,7 @@ public class SQLGameDAO implements GameDAO {
         return false;
     }
 
-    public GameData getGame(int gameID) throws DataAccessException {
+    /*public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT json from games WHERE gameID=?";
             try (var ps = conn.prepareStatement(statement)) {
@@ -84,7 +84,7 @@ public class SQLGameDAO implements GameDAO {
         catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
-    }
+    }*/
     public Collection<ListGamesResponse> listGames() throws DataAccessException {
         HashSet<ListGamesResponse> gameList = new HashSet<>();
         try (var conn = DatabaseManager.getConnection()) {
