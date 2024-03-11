@@ -23,6 +23,9 @@ public class SQLGameDAO implements GameDAO {
         manager.executeUpdate(newStatement);
     }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
+        if(gameExists(gameName)) {
+            throw new DataAccessException("Error: already taken");
+        }
         int gameID = findCurrID();
         ChessGame implementation = new ChessGame();
         String jsonGame = new Gson().toJson(implementation);
@@ -45,6 +48,25 @@ public class SQLGameDAO implements GameDAO {
         }
         return new CreateGameResponse(gameID);
     }
+
+    private boolean gameExists(String gameName) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT COUNT(*) as count FROM games WHERE gameName = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, gameName);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        int count = rs.getInt("count");
+                        return count > 0;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+        return false;
+    }
+
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT json from games WHERE gameID=?";

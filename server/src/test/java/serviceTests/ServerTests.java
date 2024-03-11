@@ -1,14 +1,20 @@
-/*package serviceTests;
+package serviceTests;
+import Requests.JoinRequest;
+import Requests.ListGamesResponse;
+import Requests.ListGamesResponseList;
 import Requests.LoginResponse;
+import chess.ChessGame;
 import dataAccess.DataAccessException;
-import dataAccess.SQLAuthDAO;
-import dataAccess.SQLGameDAO;
-import dataAccess.SQLUserDAO;
+import dataAccess.*;
 import org.junit.jupiter.api.*;
 import model.*;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,15 +33,13 @@ public class ServerTests {
     }
     @Test
     public void clearTest() throws DataAccessException {
-        SQLUserDAO userDAO = new SQLUserDAO();
-        UserService userService = new UserService(userDAO);
-
         userDAO.createUser("username","password","email");
         userDAO.createUser("user","pass", "mail");
 
         userService.clearUser();
 
-        assertEquals(0,userDAO.users.size());
+        assertThrows(DataAccessException.class,() -> {userDAO.getUser("username");
+        });
     }
     @Test
     public void createGameTestPos() throws DataAccessException{
@@ -44,96 +48,80 @@ public class ServerTests {
 
         gameService.createGame("game name");
 
-        assertEquals(1,gameDAO.games.size());
+        assertNotNull(gameService.listGames());
     }
     @Test
     public void createGameTestNeg() throws DataAccessException{
-        SQLGameDAO gameDAO = new SQLGameDAO();
-        GameService gameService = new GameService(gameDAO);
-
         gameService.createGame("game");
         assertThrows(DataAccessException.class, () -> { gameService.createGame("game");
         });
     }
     @Test
     public void joinGameTestPos() throws DataAccessException{
-        SQLGameDAO gameDAO = new SQLGameDAO();
-        GameService gameService = new GameService(gameDAO);
-
-        gameService.createGame("new game");
-
-        gameDAO.updateWhiteUsername(0,"username");
-
-        GameData gameData = gameDAO.getGame(0);
-
-        assertNotEquals(gameData.whiteUsername(),null);
+        UserData newUser = new UserData("username", "pass", "email@email.email");
+        userService.addUser(newUser);
+        int gameID = gameService.createGame("new game").gameID();
+        JoinRequest joinRequest = new JoinRequest(ChessGame.TeamColor.WHITE,gameID);
+        gameService.join(joinRequest,"username");
+        HashSet<ListGamesResponse> logins = new HashSet<>(gameService.listGames());
+        boolean passesTest = false;
+        for(ListGamesResponse login:logins){
+            if(Objects.equals(login.whiteUsername(), "username")){
+                passesTest = true;
+                break;
+            }
+        }
+        assertTrue(passesTest);
     }
     @Test
     public void joinGameTestNeg() throws DataAccessException{
-        SQLGameDAO gameDAO = new SQLGameDAO();
-        GameService gameService = new GameService(gameDAO);
+        UserData newUser = new UserData("username", "pass", "email@email.email");
+        userService.addUser(newUser);
+        int gameID = gameService.createGame("new game").gameID();
+        JoinRequest joinRequest = new JoinRequest(ChessGame.TeamColor.WHITE,gameID);
+        gameService.join(joinRequest,"username");
 
-        gameService.createGame("new game");
-
-        gameDAO.updateWhiteUsername(0,"username");
-
-        assertThrows(DataAccessException.class, () -> { gameDAO.updateWhiteUsername(0,"username");
+        assertThrows(DataAccessException.class, () -> { gameService.join(joinRequest,"username");
         });
     }
     @Test
     public void listGamesTestPos() throws DataAccessException{
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
-        GameService gameService = new GameService(gameDAO);
-
         gameService.createGame("new game");
 
         assertEquals(gameService.listGames().size(),1);
     }
     @Test
     public void listGamesTestNeg() throws DataAccessException{
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
-        GameService gameService = new GameService(gameDAO);
-
         assertNotEquals(gameService.listGames().size(),1);
     }
     @Test
     public void loginTestPos() throws DataAccessException{
-        MemoryUserDAO userDAO = new MemoryUserDAO();
         userDAO.createUser("user1", "password1", "email1@example.com");
 
         assertDoesNotThrow(() -> {userDAO.login("user1","password1");});
     }
     @Test
     public void loginTestNeg() throws DataAccessException{
-        MemoryUserDAO userDAO = new MemoryUserDAO();
         userDAO.createUser("user1", "password1", "email1@example.com");
-
         assertThrows(DataAccessException.class, () -> {userDAO.login("user1","password2");});
     }
     @Test
     public void logoutTestPos() throws DataAccessException{
-        MemoryUserDAO userDAO = new MemoryUserDAO();
-        MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        AuthService authService = new AuthService(authDAO);
-
-        assertEquals(0, authDAO.authTokens.size());
+        LoginResponse login = userDAO.createUser("user1", "password1", "email1@example.com");
+        authService.insertAuth(login.username(),login.authToken());
+        String authToken = login.authToken();
+        authService.logout(authToken);
+        assertThrows(DataAccessException.class, () -> {authService.findAuth(login.authToken());});
     }
     @Test
     public void logoutTestNeg() throws DataAccessException{
-        MemoryUserDAO userDAO = new MemoryUserDAO();
-        MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        AuthService authService = new AuthService(authDAO);
-        LoginResponse login = userDAO.createUser("user1", "password1", "email1@example.com");
-
-        String authToken = login.authToken();
-        assertThrows(DataAccessException.class, () -> {authService.logout(authToken);});
+        userDAO.createUser("user1", "password1", "email1@example.com");
+        assertThrows(DataAccessException.class, () -> {authService.logout("I-hate-CS-240");});
     }
     @Test
     public void registrationTestPos() throws DataAccessException{
-        MemoryUserDAO userDAO = new MemoryUserDAO();
-        userDAO.createUser("user1", "password1", "email1@example.com");
-
-        assertEquals(1,userDAO.users.size());
+        LoginResponse login = userDAO.createUser("user1", "password1", "email1@example.com");
+        assertNotNull(login.authToken());
     }
     @Test
     public void registrationTestNeg() throws DataAccessException{
@@ -145,5 +133,5 @@ public class ServerTests {
         });
     }
 
-}*/
+}
 
