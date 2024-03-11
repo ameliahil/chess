@@ -74,13 +74,14 @@ public class SQLUserDAO implements UserDAO{
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT json from users WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         String value = rs.getString("json");
                         return new Gson().fromJson(value, UserData.class);
                     }
                     else{
-                        throw new DataAccessException("STOP, LITERALLY STOP");
+                        throw new DataAccessException("No user found");
                     }
                 }
             }
