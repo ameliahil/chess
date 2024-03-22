@@ -14,14 +14,12 @@ public class ChessClient {
     private State state = State.SIGNEDOUT;
     private final ServerFacade server;
     private String user = "";
-    private final String serverUrl;
 
     private String authToken;
     private HashMap<Integer, Integer> idMap = new HashMap<>();
 
     public ChessClient(String serverUrl, Repl repl) {
         server = new ServerFacade(serverUrl);
-        this.serverUrl = serverUrl;
         this.repl = repl;
     }
     public String eval(String input) {
