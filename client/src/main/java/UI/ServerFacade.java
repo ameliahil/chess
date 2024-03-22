@@ -57,9 +57,9 @@ public class ServerFacade {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
-            if(!method.equals("GET")){
+            //if(!method.equals("GET")){
                 http.setDoOutput(true);
-            }
+            //}
 
             writeBody(request, http);
             http.connect();
@@ -71,11 +71,11 @@ public class ServerFacade {
     }
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
+        if (authToken != null) {
+            http.addRequestProperty("Authorization", authToken);
+        }
         if (request != null) {
             http.addRequestProperty("Content-Type", "application/json");
-            if (authToken != null) {
-                http.addRequestProperty("Authorization", authToken);
-            }
             String reqData = new Gson().toJson(request);
             try (OutputStream reqBody = http.getOutputStream()) {
                 reqBody.write(reqData.getBytes());
