@@ -1,7 +1,6 @@
 package UI;
 
 import Requests.*;
-import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import model.UserData;
@@ -15,7 +14,6 @@ public class ServerFacade {
     public ServerFacade(String url) {
         serverUrl = url;
     }
-
 
 
     public void clear() throws DataAccessException {
