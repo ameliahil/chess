@@ -10,6 +10,7 @@ import java.net.*;
 
 public class ServerFacade {
     private final String serverUrl;
+    private static String authToken;
 
     public ServerFacade(String url) {
         serverUrl = url;
@@ -23,14 +24,18 @@ public class ServerFacade {
 
     public LoginResponse registration(UserData user) throws DataAccessException {
         var path = "/user";
-        return this.makeRequest("POST", path, user, LoginResponse.class);
+        LoginResponse loginResponse = this.makeRequest("POST", path, user, LoginResponse.class);
+        authToken = loginResponse.authToken();
+        return loginResponse;
     }
 
     public LoginResponse login(LoginRequest loginRequest) throws DataAccessException {
         var path = "/session";
-        return this.makeRequest("POST", path, loginRequest, LoginResponse.class);
+        LoginResponse loginResponse = this.makeRequest("POST", path, loginRequest, LoginResponse.class);
+        authToken = loginResponse.authToken();
+        return loginResponse;
     }
-    public void logout(String authToken) throws DataAccessException {
+    public void logout() throws DataAccessException {
         var path = "/session";
         this.makeRequest("DELETE", path, authToken, null);
     }
@@ -68,6 +73,9 @@ public class ServerFacade {
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {
             http.addRequestProperty("Content-Type", "application/json");
+            if (authToken != null) {
+                http.addRequestProperty("Authorization", authToken);
+            }
             String reqData = new Gson().toJson(request);
             try (OutputStream reqBody = http.getOutputStream()) {
                 reqBody.write(reqData.getBytes());
