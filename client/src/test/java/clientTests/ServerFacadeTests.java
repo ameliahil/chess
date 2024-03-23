@@ -1,6 +1,7 @@
 package clientTests;
 
 import Requests.*;
+import UI.Repl;
 import UI.ServerFacade;
 import chess.ChessGame;
 import dataAccess.*;
@@ -15,8 +16,6 @@ public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade serverFacade;
-    SQLUserDAO userDAO = new SQLUserDAO();
-    SQLGameDAO gameDAO = new SQLGameDAO();
     SQLAuthDAO authDAO = new SQLAuthDAO();
 
     @BeforeAll
@@ -25,7 +24,6 @@ public class ServerFacadeTests {
         var port = server.run(0);
         String url = "http://localhost:" + port;
         serverFacade = new ServerFacade(url);
-
         System.out.println("Started test HTTP server on " + port);
     }
 

@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class ChessClient {
-    private final Repl repl;
     private State state = State.SIGNEDOUT;
     private final ServerFacade server;
     private String user = "";
@@ -20,7 +19,6 @@ public class ChessClient {
 
     public ChessClient(String serverUrl, Repl repl) {
         server = new ServerFacade(serverUrl);
-        this.repl = repl;
     }
     public String eval(String input) {
         try {
