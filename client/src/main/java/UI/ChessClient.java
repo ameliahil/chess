@@ -5,9 +5,13 @@ import chess.ChessGame;
 import dataAccess.DataAccessException;
 import model.UserData;
 
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+
+import static UI.EscapeSequences.*;
 
 public class ChessClient {
     private State state = State.SIGNEDOUT;
@@ -53,7 +57,7 @@ public class ChessClient {
             return String.format("You signed in as %s.", user);
         }
         else{
-            throw new DataAccessException("Wrong number of parameters");
+            throw new DataAccessException("Error");
         }
     }
     public String register(String... params) throws DataAccessException{
@@ -66,7 +70,7 @@ public class ChessClient {
             return String.format("You signed in as %s.", user);
         }
         else{
-            throw new DataAccessException("Wrong number of parameters");
+            throw new DataAccessException("Error");
         }
     }
     public String logout(String... params) throws DataAccessException{
@@ -76,7 +80,7 @@ public class ChessClient {
             return String.format("Goodbye, %s.", user);
         }
         else{
-            throw new DataAccessException("Wrong number of parameters");
+            throw new DataAccessException("Error");
         }
     }
     public String createGame(String... params) throws DataAccessException{
@@ -103,7 +107,7 @@ public class ChessClient {
                 String listString = "";
                 for(ListGamesResponse game: games){
                     i += 1;
-                    listString += i + ". " + game.gameName() + "\n";
+                    listString += i + ". " + game.gameName() + "\n\tWhite:" + game.whiteUsername() + "\n\tBlack:" + game.blackUsername() + "\n";
                     idMap.put(i,game.gameID());
                 }
                 return String.format("Games:\n" + listString);
@@ -118,7 +122,7 @@ public class ChessClient {
     }
     public String joinGame(String... params) throws DataAccessException{
         if(params.length == 2){
-            if(state == State.SIGNEDIN && !idMap.isEmpty()) {
+            if((state == State.SIGNEDIN || state == State.INGAME) && !idMap.isEmpty()) {
                 int gameNum = Integer.parseInt(params[0]);
                 ChessGame.TeamColor color = null;
                 if(params[1].equals("white")){
@@ -129,7 +133,8 @@ public class ChessClient {
                 int gameID = idMap.get(gameNum);
                 JoinRequest join = new JoinRequest(color,gameID);
                 server.joinGame(join);
-                state = State.INGAME;
+                //state = State.INGAME;
+                printBoard();
                 return String.format("You joined game as %s.", params[1]);
             }
             else{
@@ -142,12 +147,13 @@ public class ChessClient {
     }
     public String observeGame(String... params) throws DataAccessException{
         if(params.length == 1){
-            if(state == State.SIGNEDIN && !idMap.isEmpty()) {
+            if((state == State.SIGNEDIN || state == State.INGAME) && !idMap.isEmpty()) {
                 int gameNum = Integer.parseInt(params[0]);
                 int gameID = idMap.get(gameNum);
                 JoinRequest join = new JoinRequest(null,gameID);
                 server.joinGame(join);
-                state = State.INGAME;
+                //state = State.INGAME;
+                printBoard();
                 return String.format("You joined game %s as an observer.", gameNum);
             }
             else{
@@ -161,20 +167,96 @@ public class ChessClient {
     public String help(){
         if(state == State.SIGNEDOUT){
             return"""
-                register <USERNAME> <PASSWORD> <EMAIL>
-                login <USERNAME> <PASSWORD>
-                quit
-                help
+                register <USERNAME> <PASSWORD> <EMAIL> - type in your info to get started
+                login <USERNAME> <PASSWORD> - type your username and password
+                quit - done already?
+                help - type help to see all commands
                 """;
         }
         return """
-                create <NAME>
-                list
-                join <ID> [WHITE|BLACK|<empty>]
-                observe <ID>
-                logout
+                create <NAME> - create a new game
+                list - list all possible games
+                join <ID> [WHITE|BLACK] - join a game! make sure to list games first
+                observe <ID> - don't want to play? type the game id to simply observe
+                logout - see you next time!
                 quit
                 help
                 """;
+    }
+
+    public void printBoard(){
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print(ERASE_SCREEN);
+
+        System.out.print(SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD);
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                String piece = findPiece(y, x);
+                boolean isWhite = (x + y) % 2 == 0;
+                String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                System.out.print(backgroundColor + piece);
+            }
+            System.out.println(EscapeSequences.RESET_BG_COLOR);
+        }
+        System.out.println(EscapeSequences.RESET_BG_COLOR);
+
+        for (int y = 7; y > -1; y--) {
+            for (int x = 7; x > -1; x--) {
+                String piece = findPiece(y, x);
+                boolean isWhite = (x + y) % 2 == 0;
+                String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                System.out.print(backgroundColor + piece);
+            }
+            System.out.println(EscapeSequences.RESET_BG_COLOR);
+        }
+
+        System.out.print(SET_TEXT_COLOR_WHITE + SET_BG_COLOR_DARK_GREY + RESET_TEXT_BOLD_FAINT);
+    }
+
+    private String findPiece(int row, int col){
+        if(row > 1 && row < 6){
+            return EMPTY;
+        }
+        if(row == 1){
+            return BLACK_PAWN;
+        }
+        if(row == 6){
+            return WHITE_PAWN;
+        }
+        if(row == 0){
+            if(col == 0 || col == 7){
+                return BLACK_ROOK;
+            }
+            if(col == 1 || col == 6){
+                return BLACK_KNIGHT;
+            }
+            if(col == 2 || col == 5){
+                return BLACK_BISHOP;
+            }
+            if(col == 3){
+                return BLACK_KING;
+            }
+            if(col == 4){
+                return BLACK_QUEEN;
+            }
+        }
+        if(row == 7){
+            if(col == 0 || col == 7){
+                return WHITE_ROOK;
+            }
+            if(col == 1 || col == 6){
+                return WHITE_KNIGHT;
+            }
+            if(col == 2 || col == 5){
+                return WHITE_BISHOP;
+            }
+            if(col == 3){
+                return WHITE_KING;
+            }
+            if(col == 4){
+                return WHITE_QUEEN;
+            }
+        }
+        return null;
     }
 }

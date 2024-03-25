@@ -1,6 +1,7 @@
 package clientTests;
 
 import Requests.*;
+import UI.ChessClient;
 import UI.Repl;
 import UI.ServerFacade;
 import chess.ChessGame;
@@ -136,5 +137,12 @@ public class ServerFacadeTests {
         JoinRequest joinRequest = new JoinRequest(ChessGame.TeamColor.WHITE,createGameResponse.gameID());
         serverFacade.joinGame(joinRequest);
         assertThrows(DataAccessException.class,()->{serverFacade.joinGame(joinRequest);});
+    }
+
+    @Test
+    public void printBoard(){
+        Repl repl = new Repl("url");
+        ChessClient client = new ChessClient("yee",repl);
+        client.printBoard();
     }
 }
