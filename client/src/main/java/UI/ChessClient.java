@@ -87,7 +87,8 @@ public class ChessClient {
         if(params.length == 1){
             if(state == State.SIGNEDIN) {
                 CreateGameRequest createGameRequest = new CreateGameRequest(params[0]);
-                server.createGame(createGameRequest);
+                CreateGameResponse response = server.createGame(createGameRequest);
+                int gameID = response.gameID();
                 return String.format("You created game %s.", params[0]);
             }
             else{
@@ -134,7 +135,7 @@ public class ChessClient {
                 JoinRequest join = new JoinRequest(color,gameID);
                 server.joinGame(join);
                 //state = State.INGAME;
-                printBoard();
+                printBoard(color);
                 return String.format("You joined game as %s.", params[1]);
             }
             else{
@@ -153,7 +154,7 @@ public class ChessClient {
                 JoinRequest join = new JoinRequest(null,gameID);
                 server.joinGame(join);
                 //state = State.INGAME;
-                printBoard();
+                printBoard(ChessGame.TeamColor.WHITE);
                 return String.format("You joined game %s as an observer.", gameNum);
             }
             else{
@@ -184,11 +185,12 @@ public class ChessClient {
                 """;
     }
 
-    public void printBoard(){
+    public void printBoard(ChessGame.TeamColor color){
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
         System.out.print(SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD);
+
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 String piece = findPiece(y, x);

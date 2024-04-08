@@ -143,6 +143,7 @@ public class ServerFacadeTests {
     public void printBoard(){
         Repl repl = new Repl("url");
         ChessClient client = new ChessClient("yee",repl);
-        client.printBoard();
+        client.printBoard(ChessGame.TeamColor.WHITE);
+        client.printBoard(ChessGame.TeamColor.BLACK);
     }
 }
