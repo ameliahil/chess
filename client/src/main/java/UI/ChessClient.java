@@ -1,7 +1,10 @@
 package UI;
 
 import Requests.*;
+import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import dataAccess.DataAccessException;
 import model.UserData;
 import webSocket.NotificationHandler;
@@ -163,7 +166,7 @@ public class ChessClient {
                 JoinRequest join = new JoinRequest(null,gameID);
                 server.joinGame(join);
                 state = State.INGAME;
-                printBoard(ChessGame.TeamColor.WHITE);
+                //printBoard(ChessGame.TeamColor.WHITE);
                 return String.format("You joined game %s as an observer.", gameNum);
             }
             else{
@@ -217,29 +220,54 @@ public class ChessClient {
                 """;
     }
 
-    public void printBoard(ChessGame.TeamColor color){
+    public void printBoard(ChessGame.TeamColor color, ChessGame game){
+        ChessBoard board = game.getBoard();
+
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
-        System.out.print(SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD);
+        System.out.print(SET_TEXT_BOLD);
 
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                String piece = findPiece(y, x);
-                boolean isWhite = (x + y) % 2 == 0;
-                String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
-                System.out.print(backgroundColor + piece);
+        char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+
+        if (color == ChessGame.TeamColor.WHITE) {
+            System.out.print("  ");
+            for (char letter : letters) {
+                System.out.print(letter + "   ");
+            }
+            System.out.println();
+
+            for (int y = 0; y < 8; y++) {
+                int row = 8 - y;
+                System.out.print(SET_TEXT_COLOR_WHITE + row + " ");
+                System.out.print(SET_TEXT_COLOR_BLACK);
+                for (int x = 0; x < 8; x++) {
+                    String piece = findPiece(y, x, board);
+                    boolean isWhite = (x + y) % 2 == 0;
+                    String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                    System.out.print(backgroundColor + piece);
+                }
+                System.out.println(EscapeSequences.RESET_BG_COLOR);
             }
             System.out.println(EscapeSequences.RESET_BG_COLOR);
-        }
-        System.out.println(EscapeSequences.RESET_BG_COLOR);
+        } else if (color == ChessGame.TeamColor.BLACK) {
+            System.out.print("  ");
+            for (int i = 7; i > -1; i--) {
+                System.out.print(letters[i] + "   ");
+            }
+            System.out.println();
 
-        for (int y = 7; y > -1; y--) {
-            for (int x = 7; x > -1; x--) {
-                String piece = findPiece(y, x);
-                boolean isWhite = (x + y) % 2 == 0;
-                String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
-                System.out.print(backgroundColor + piece);
+            for (int y = 7; y > -1; y--) {
+                int row = 8 - y;
+                System.out.print(SET_TEXT_COLOR_WHITE + row + " ");
+                System.out.print(SET_TEXT_COLOR_BLACK);
+                for (int x = 7; x > -1; x--) {
+                    String piece = findPiece(y, x, board);
+                    boolean isWhite = (x + y) % 2 == 0;
+                    String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                    System.out.print(backgroundColor + piece);
+                }
+                System.out.println(EscapeSequences.RESET_BG_COLOR);
             }
             System.out.println(EscapeSequences.RESET_BG_COLOR);
         }
@@ -247,50 +275,53 @@ public class ChessClient {
         System.out.print(SET_TEXT_COLOR_WHITE + SET_BG_COLOR_DARK_GREY + RESET_TEXT_BOLD_FAINT);
     }
 
-    private String findPiece(int row, int col){
-        if(row > 1 && row < 6){
+    private String findPiece(int row, int col, ChessBoard board){
+        ChessPosition position = new ChessPosition(8 - row,8 - col);
+        ChessPiece piece = board.getPiece(position);
+        if(piece == null){
             return EMPTY;
         }
-        if(row == 1){
-            return BLACK_PAWN;
-        }
-        if(row == 6){
-            return WHITE_PAWN;
-        }
-        if(row == 0){
-            if(col == 0 || col == 7){
-                return BLACK_ROOK;
+        ChessPiece.PieceType pieceType = piece.getPieceType();
+        if(piece.getTeamColor() == ChessGame.TeamColor.WHITE){
+            if(pieceType == ChessPiece.PieceType.PAWN){
+                return WHITE_PAWN;
             }
-            if(col == 1 || col == 6){
-                return BLACK_KNIGHT;
-            }
-            if(col == 2 || col == 5){
-                return BLACK_BISHOP;
-            }
-            if(col == 3){
-                return BLACK_KING;
-            }
-            if(col == 4){
-                return BLACK_QUEEN;
-            }
-        }
-        if(row == 7){
-            if(col == 0 || col == 7){
+            if(pieceType == ChessPiece.PieceType.ROOK){
                 return WHITE_ROOK;
             }
-            if(col == 1 || col == 6){
+            if(pieceType == ChessPiece.PieceType.KNIGHT){
                 return WHITE_KNIGHT;
             }
-            if(col == 2 || col == 5){
+            if(pieceType == ChessPiece.PieceType.BISHOP){
                 return WHITE_BISHOP;
             }
-            if(col == 3){
+            if(pieceType == ChessPiece.PieceType.KING){
                 return WHITE_KING;
             }
-            if(col == 4){
+            if(pieceType == ChessPiece.PieceType.QUEEN){
                 return WHITE_QUEEN;
             }
         }
-        return null;
+        else if(piece.getTeamColor() == ChessGame.TeamColor.BLACK){
+            if(pieceType == ChessPiece.PieceType.ROOK){
+                return BLACK_ROOK;
+            }
+            if(pieceType == ChessPiece.PieceType.PAWN){
+                return BLACK_PAWN;
+            }
+            if(pieceType == ChessPiece.PieceType.BISHOP){
+                return BLACK_BISHOP;
+            }
+            if(pieceType == ChessPiece.PieceType.KNIGHT){
+                return BLACK_KNIGHT;
+            }
+            if(pieceType == ChessPiece.PieceType.KING){
+                return BLACK_KING;
+            }
+            if(pieceType == ChessPiece.PieceType.QUEEN){
+                return BLACK_QUEEN;
+            }
+        }
+        return EMPTY;
     }
 }

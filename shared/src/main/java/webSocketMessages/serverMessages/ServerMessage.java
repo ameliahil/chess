@@ -29,7 +29,7 @@ public class ServerMessage {
 
     public String getMessage(){
         return message;
-    }
+     }
 
     public ServerMessageType getServerMessageType() {
         return this.serverMessageType;
