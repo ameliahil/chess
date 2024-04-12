@@ -1,11 +1,14 @@
 package UI;
 
+import webSocket.NotificationHandler;
+import webSocketMessages.serverMessages.ServerMessage;
+
 import java.util.Scanner;
 
-public class Repl {
+public class Repl implements NotificationHandler {
     private final ChessClient client;
 
-    public Repl(String serverUrl) {
+    public Repl (String serverUrl) {
         client = new ChessClient(serverUrl, this);
     }
 
@@ -32,5 +35,10 @@ public class Repl {
 
     private void printPrompt() {
         System.out.print("\n");
+    }
+
+    @Override
+    public void notify(ServerMessage notification) {
+        System.out.println(notification.getMessage());
     }
 }

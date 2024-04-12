@@ -1,6 +1,8 @@
 
 package webSocketMessages.userCommands;
 
+import chess.ChessGame;
+
 import java.util.Objects;
 
 /**
@@ -25,7 +27,16 @@ public class UserGameCommand {
 
     protected CommandType commandType;
 
-    private final String authToken;
+    public String authToken;
+    public String userName;
+    public ChessGame.TeamColor teamColor;
+    public void setUserName(String userName){
+        this.userName = userName;
+    }
+    public String getUserName(){
+        return userName;
+    }
+
 
     public String getAuthString() {
         return authToken;

@@ -1,10 +1,14 @@
 package webSocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import dataAccess.DataAccessException;
 import webSocketMessages.serverMessages.Error;
+import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinPlayerCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import javax.websocket.*;
@@ -30,20 +34,21 @@ public class WebSocketFacade extends Endpoint {
 
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
+                @OnMessage
                 public void onMessage(String message) {
                     ServerMessage serverMessage = new Gson().fromJson(message,ServerMessage.class);
 
                     if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR){
                         Error object = new Gson().fromJson(message,Error.class);
-                        //System.out.println(object.getMessage());
+                        System.out.println(object.getMessage());
                     }
                     else if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION){
                         Notification object = new Gson().fromJson(message,Notification.class);
-                        //System.out.println(object.getMessage);
+                        System.out.println(object.getMessage());
                     }
                     else if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME){
-
+                        LoadGame object = new Gson().fromJson(message,LoadGame.class);
+                        System.out.println(object.getMessage());
                     }
 
                     System.out.println(message);
@@ -54,14 +59,24 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    @Override
+    @OnOpen
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void enterPetShop(String visitorName) throws DataAccessException {
+    public void sendCommand(UserGameCommand command) {
+        try{
+            String json = new Gson().toJson(command,UserGameCommand.class);
+            this.session.getBasicRemote().sendObject(json);
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void joinPlayer(String authToken, int gameID, ChessGame.TeamColor color, String userName) throws DataAccessException {
         try {
-            var action = new UserGameCommand(visitorName);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            JoinPlayerCommand command = new JoinPlayerCommand(authToken,gameID,color, userName);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new DataAccessException(ex.getMessage());
         }

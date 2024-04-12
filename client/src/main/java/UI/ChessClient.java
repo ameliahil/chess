@@ -4,6 +4,9 @@ import Requests.*;
 import chess.ChessGame;
 import dataAccess.DataAccessException;
 import model.UserData;
+import webSocket.NotificationHandler;
+import webSocket.WebSocketFacade;
+import webSocketMessages.userCommands.JoinPlayerCommand;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -19,10 +22,14 @@ public class ChessClient {
     private String user = "";
 
     private String authToken;
+    private final String url;
     private HashMap<Integer, Integer> idMap = new HashMap<>();
+    private NotificationHandler notificationHandler;
 
-    public ChessClient(String serverUrl, Repl repl) {
+    public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
+        url = serverUrl;
+        this.notificationHandler = notificationHandler;
     }
     public String eval(String input) {
         try {
@@ -134,8 +141,10 @@ public class ChessClient {
                 int gameID = idMap.get(gameNum);
                 JoinRequest join = new JoinRequest(color,gameID);
                 server.joinGame(join);
-                //state = State.INGAME;
-                printBoard(color);
+                WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
+                ws.joinPlayer(authToken,gameID,color,user);
+                state = State.INGAME;
+                //printBoard(color);
                 return String.format("You joined game as %s.", params[1]);
             }
             else{
@@ -153,9 +162,23 @@ public class ChessClient {
                 int gameID = idMap.get(gameNum);
                 JoinRequest join = new JoinRequest(null,gameID);
                 server.joinGame(join);
-                //state = State.INGAME;
+                state = State.INGAME;
                 printBoard(ChessGame.TeamColor.WHITE);
                 return String.format("You joined game %s as an observer.", gameNum);
+            }
+            else{
+                throw new DataAccessException("Not logged in");
+            }
+        }
+        else{
+            throw new DataAccessException("Wrong number of parameters");
+        }
+    }
+
+    public String leave(String... params) throws DataAccessException {
+        if(params.length == 0){
+            if(state == State.INGAME) {
+                return "You left the game.";
             }
             else{
                 throw new DataAccessException("Not logged in");
@@ -174,13 +197,22 @@ public class ChessClient {
                 help - type help to see all commands
                 """;
         }
-        return """
+        else if(state == State.SIGNEDIN){
+            return """
                 create <NAME> - create a new game
                 list - list all possible games
                 join <ID> [WHITE|BLACK] - join a game! make sure to list games first
                 observe <ID> - don't want to play? type the game id to simply observe
                 logout - see you next time!
                 quit
+                help
+                """;}
+        return """
+                redraw - redraw the chess board
+                move <start square> <end square> - join a game! make sure to list games first
+                highlight <square> - what moves can your piece play!
+                leave - would you like to leave the game?
+                resign - you will forfeit the game!
                 help
                 """;
     }
