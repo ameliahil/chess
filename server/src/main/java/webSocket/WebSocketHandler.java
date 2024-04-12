@@ -1,5 +1,6 @@
-package server.websocket;
+package webSocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.*;
 import org.eclipse.jetty.websocket.api.Session;
@@ -21,17 +22,18 @@ public class WebSocketHandler {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
-        switch (command.getCommandType()) {
-            case UserGameCommand.CommandType.JOIN_PLAYER -> enter(action.visitorName(), session);
-            //case EXIT -> exit(action.visitorName());
+        if(command.getCommandType() == UserGameCommand.CommandType.JOIN_PLAYER){
+            JoinPlayerCommand joinPlayerCommand = (JoinPlayerCommand) command;
+            joinPlayer(command.getUserName(),joinPlayerCommand.getTeamColor(), session);
         }
     }
 
-    private void joinPlayer(String userName, Session session) throws IOException {
-        connections.add(visitorName, session);
-        var message = String.format("%s is in the shop", visitorName);
-        var notification = new Notification(Notification.Type.ARRIVAL, message);
-        connections.broadcast(visitorName, notification);
+    private void joinPlayer(String userName, ChessGame.TeamColor color, Session session) throws IOException {
+        connections.add(userName, session);
+        var message = String.format("%s has joined the game as %s", userName, color);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        notification.addMessage(message);
+        connections.broadcast(userName, notification);
     }
 
     /*private void exit(String visitorName) throws IOException {
