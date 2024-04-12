@@ -24,16 +24,16 @@ public class WebSocketHandler {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         if(command.getCommandType() == UserGameCommand.CommandType.JOIN_PLAYER){
             JoinPlayerCommand joinPlayerCommand = new Gson().fromJson(message, JoinPlayerCommand.class);
-            joinPlayer(command.getUserName(),joinPlayerCommand.getTeamColor(), session);
+            joinPlayer(command.getUserName(),joinPlayerCommand.getTeamColor(), session, joinPlayerCommand.authToken);
         }
     }
 
-    private void joinPlayer(String userName, ChessGame.TeamColor color, Session session) throws IOException {
-        connections.add(userName, session);
+    private void joinPlayer(String userName, ChessGame.TeamColor color, Session session, String authToken) throws IOException {
+        connections.add(userName, session, authToken);
         var message = String.format("%s has joined the game as %s", userName, color);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
-        connections.broadcast(userName, notification);
+        connections.broadcast(null, notification);
     }
 
     /*private void exit(String visitorName) throws IOException {

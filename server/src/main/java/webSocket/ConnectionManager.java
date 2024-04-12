@@ -11,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager {
     public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
 
-    public void add(String userName, Session session) {
+    public void add(String userName, Session session, String authToken) {
         var connection = new Connection(userName, session);
-        connections.put(userName, connection);
+        connections.put(authToken, connection);
     }
 
     public void remove(String userName) {
