@@ -8,6 +8,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import webSocketMessages.serverMessages.Error;
+import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinPlayerCommand;
 import webSocketMessages.userCommands.UserGameCommand;
@@ -52,6 +53,8 @@ public class WebSocketHandler {
         }
 
         connections.add(command.userName, session, command.authToken);
+        var loadGame = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
+        connection.send(new Gson().toJson(loadGame));
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
         connections.broadcast(null, notification);
