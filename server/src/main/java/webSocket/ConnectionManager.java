@@ -1,5 +1,6 @@
 package webSocket;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import webSocket.Connection;
 import webSocketMessages.serverMessages.ServerMessage;
@@ -22,10 +23,11 @@ public class ConnectionManager {
 
     public void broadcast(String excludeUserName, ServerMessage notification) throws IOException {
         var removeList = new ArrayList<Connection>();
+        String json = new Gson().toJson(notification);
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 if (!c.userName.equals(excludeUserName)) {
-                    c.send(notification.toString());
+                    c.send(json);
                 }
             } else {
                 removeList.add(c);
