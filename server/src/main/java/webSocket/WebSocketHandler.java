@@ -23,7 +23,7 @@ public class WebSocketHandler {
     public void onMessage(Session session, String message) throws IOException {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         if(command.getCommandType() == UserGameCommand.CommandType.JOIN_PLAYER){
-            JoinPlayerCommand joinPlayerCommand = (JoinPlayerCommand) command;
+            JoinPlayerCommand joinPlayerCommand = new Gson().fromJson(message, JoinPlayerCommand.class);
             joinPlayer(command.getUserName(),joinPlayerCommand.getTeamColor(), session);
         }
     }
