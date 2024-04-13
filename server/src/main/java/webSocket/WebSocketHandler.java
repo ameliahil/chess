@@ -11,6 +11,7 @@ import service.AuthService;
 import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCommand;
 import webSocketMessages.userCommands.JoinPlayerCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -93,6 +94,10 @@ public class WebSocketHandler {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
         inGame.broadcast(userName, notification);
+    }
+
+    private void joinObserver(Session session, JoinObserverCommand joinObserverCommand){
+
     }
 
     /*private void exit(String visitorName) throws IOException {
