@@ -2,6 +2,7 @@ package dataAccess;
 
 import Requests.CreateGameResponse;
 import Requests.ListGamesResponse;
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
@@ -28,6 +29,9 @@ public class SQLGameDAO implements GameDAO {
         }
         int gameID = findCurrID();
         ChessGame implementation = new ChessGame();
+        ChessBoard board = new ChessBoard();
+        board.resetBoard();
+        implementation.setBoard(board);
         String jsonGame = new Gson().toJson(implementation);
         GameData gameData = new GameData(gameID,whiteUsername,blackUsername,gameName,implementation);
         var json = new Gson().toJson(gameData);

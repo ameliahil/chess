@@ -15,6 +15,8 @@ import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.Timer;
 
 
@@ -34,7 +36,9 @@ public class WebSocketHandler {
     }
 
     private void joinPlayer(Session session, JoinPlayerCommand command) throws IOException, DataAccessException {
-        var connection = new Connection(command.userName,session);
+        int gameID = command.getGameID();
+        var connection = new Connection(command.userName,gameID,session);
+        ConnectionManager inGame = new ConnectionManager();
 
         var message = String.format("%s has joined the game as %s", command.userName, command.teamColor);
         GameData game = gameDAO.getGame(command.getGameID());
@@ -52,12 +56,16 @@ public class WebSocketHandler {
             }
         }
 
-        connections.add(command.userName, session, command.authToken);
+        connections.add(command.userName, session, command.authToken, gameID);
+
+        inGame.setMap(inGame.findInGame(gameID));
+
         var loadGame = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
+        loadGame.setColor(command.teamColor);
         connection.send(new Gson().toJson(loadGame));
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
-        connections.broadcast(null, notification);
+        inGame.broadcast(command.userName, notification);
     }
 
     /*private void exit(String visitorName) throws IOException {
