@@ -37,6 +37,10 @@ public class WebSocketHandler {
             JoinPlayerCommand joinPlayerCommand = new Gson().fromJson(message, JoinPlayerCommand.class);
             joinPlayer(session, joinPlayerCommand);
         }
+        else if(command.getCommandType() == UserGameCommand.CommandType.JOIN_OBSERVER){
+            JoinObserverCommand joinCommand = new Gson().fromJson(message, JoinObserverCommand.class);
+            joinObserver(session, joinCommand);
+        }
     }
 
     private void joinPlayer(Session session, JoinPlayerCommand command) throws IOException, DataAccessException {
@@ -96,8 +100,41 @@ public class WebSocketHandler {
         inGame.broadcast(userName, notification);
     }
 
-    private void joinObserver(Session session, JoinObserverCommand joinObserverCommand){
+    private void joinObserver(Session session, JoinObserverCommand command) throws IOException, DataAccessException {
+        int gameID = command.getGameID();
+        String userName = null;
+        try{
+            userName = authDAO.getUser(command.authToken);
+        }
+        catch (DataAccessException e){
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Wrong game ID"));
+            var connection = new Connection(null,gameID,session);
+            connection.send(error);
+            return;
+        }
+        ConnectionManager inGame = new ConnectionManager();
+        var connection = new Connection(userName,gameID,session);
 
+        try{
+            gameDAO.getGame(gameID);
+        }catch(DataAccessException e){
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Wrong game ID"));
+            connection.send(error);
+        }
+
+        connections.add(userName, session, command.authToken, gameID);
+
+        var message = String.format("%s has joined the game as %s", userName, command.playerColor);
+        GameData game = gameDAO.getGame(command.getGameID());
+
+        inGame.setMap(inGame.findInGame(gameID, connections.getMap()));
+
+        var loadGame = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
+        loadGame.setColor(ChessGame.TeamColor.WHITE);
+        connection.send(new Gson().toJson(loadGame));
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        notification.addMessage(message);
+        inGame.broadcast(userName, notification);
     }
 
     /*private void exit(String visitorName) throws IOException {
