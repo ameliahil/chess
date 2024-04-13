@@ -40,11 +40,26 @@ public class WebSocketHandler {
 
     private void joinPlayer(Session session, JoinPlayerCommand command) throws IOException, DataAccessException {
         int gameID = command.getGameID();
-        String userName = authDAO.getUser(command.authToken);
+        String userName = null;
+        try{
+            userName = authDAO.getUser(command.authToken);
+        }
+        catch (DataAccessException e){
+            var connection = new Connection(null,gameID,session);
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Wrong game ID"));
+            connection.send(error);
+            return;
+        }
 
         var connection = new Connection(userName,gameID,session);
         ConnectionManager inGame = new ConnectionManager();
 
+        try{
+            gameDAO.getGame(gameID);
+        }catch(DataAccessException e){
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Wrong game ID"));
+            connection.send(error);
+        }
         var message = String.format("%s has joined the game as %s", userName, command.playerColor);
         GameData game = gameDAO.getGame(command.getGameID());
 
