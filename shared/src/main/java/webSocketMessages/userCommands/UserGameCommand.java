@@ -28,14 +28,8 @@ public class UserGameCommand {
     protected CommandType commandType;
 
     public String authToken;
-    public String userName;
-    public ChessGame.TeamColor teamColor;
-    public void setUserName(String userName){
-        this.userName = userName;
-    }
-    public String getUserName(){
-        return userName;
-    }
+    public ChessGame.TeamColor playerColor;
+
 
 
     public String getAuthString() {

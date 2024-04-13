@@ -76,9 +76,9 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void joinPlayer(String authToken, int gameID, ChessGame.TeamColor color, String userName) throws DataAccessException {
+    public void joinPlayer(String authToken, int gameID, ChessGame.TeamColor color) throws DataAccessException {
         try {
-            JoinPlayerCommand command = new JoinPlayerCommand(authToken,gameID,color, userName);
+            JoinPlayerCommand command = new JoinPlayerCommand(authToken,gameID,color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new DataAccessException(ex.getMessage());

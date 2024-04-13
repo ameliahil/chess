@@ -49,6 +49,7 @@ public class ChessClient {
                 case "list" -> listGames(params);
                 case "join" -> joinGame(params);
                 case "observe" -> observeGame(params);
+                case "leave" -> leave(params);
                 case "quit" -> "quit";
                 case null, default -> help();
             };
@@ -146,9 +147,8 @@ public class ChessClient {
                 JoinRequest join = new JoinRequest(color,gameID);
                 server.joinGame(join);
                 WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
-                ws.joinPlayer(authToken,gameID,color,user);
+                ws.joinPlayer(authToken,gameID,color);
                 state = State.INGAME;
-                //printBoard(color);
                 return String.format("You joined game as %s.", params[1]);
             }
             else{
@@ -182,6 +182,7 @@ public class ChessClient {
     public String leave(String... params) throws DataAccessException {
         if(params.length == 0){
             if(state == State.INGAME) {
+                state = State.SIGNEDIN;
                 return "You left the game.";
             }
             else{
