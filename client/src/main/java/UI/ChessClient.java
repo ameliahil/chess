@@ -9,6 +9,7 @@ import dataAccess.DataAccessException;
 import model.UserData;
 import webSocket.NotificationHandler;
 import webSocket.WebSocketFacade;
+import model.GameData;
 import webSocketMessages.userCommands.JoinPlayerCommand;
 
 import java.io.PrintStream;
@@ -220,8 +221,9 @@ public class ChessClient {
                 """;
     }
 
-    public void printBoard(ChessGame.TeamColor color, ChessGame game){
-        ChessBoard board = game.getBoard();
+    public void printBoard(ChessGame.TeamColor color,GameData game){
+        ChessGame chessGame = game.implementation();
+        ChessBoard board = chessGame.getBoard();
 
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);

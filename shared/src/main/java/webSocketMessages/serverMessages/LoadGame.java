@@ -1,15 +1,23 @@
 package webSocketMessages.serverMessages;
 
+import chess.ChessGame;
 import model.GameData;
 
 public class LoadGame extends ServerMessage{
-    private final GameData gameData;
+    private final GameData game;
+    private ChessGame.TeamColor color;
 
-    public LoadGame(ServerMessageType type, GameData gameData) {
+    public LoadGame(ServerMessageType type, GameData game) {
         super(type);
-        this.gameData = gameData;
+        this.game = game;
     }
     public GameData getGameData(){
-        return gameData;
+        return game;
+    }
+    public void setColor(ChessGame.TeamColor color){
+        this.color = color;
+    }
+    public ChessGame.TeamColor getColor(){
+        return color;
     }
 }

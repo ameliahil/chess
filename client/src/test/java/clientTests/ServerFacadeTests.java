@@ -4,6 +4,7 @@ import Requests.*;
 import UI.ChessClient;
 import UI.Repl;
 import UI.ServerFacade;
+import chess.ChessBoard;
 import chess.ChessGame;
 import dataAccess.*;
 import model.UserData;
@@ -143,7 +144,11 @@ public class ServerFacadeTests {
     public void printBoard(){
         Repl repl = new Repl("url");
         ChessClient client = new ChessClient("yee",repl);
-        client.printBoard(ChessGame.TeamColor.WHITE);
-        client.printBoard(ChessGame.TeamColor.BLACK);
+        ChessBoard board = new ChessBoard();
+        board.resetBoard();
+        ChessGame game = new ChessGame();
+        game.setBoard(board);
+        //client.printBoard(ChessGame.TeamColor.WHITE,game);
+        //client.printBoard(ChessGame.TeamColor.BLACK, game);
     }
 }

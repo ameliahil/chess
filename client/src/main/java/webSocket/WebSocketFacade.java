@@ -1,9 +1,11 @@
 package webSocket;
 
+import UI.ChessClient;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataAccess.DataAccessException;
+import model.GameData;
 import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
@@ -21,10 +23,12 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     NotificationHandler notificationHandler;
+    ChessClient client;
 
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws DataAccessException {
         try {
+            this.client = new ChessClient(url, notificationHandler);
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");
             this.notificationHandler = notificationHandler;
@@ -48,10 +52,9 @@ public class WebSocketFacade extends Endpoint {
                     }
                     else if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME){
                         LoadGame object = new Gson().fromJson(message,LoadGame.class);
-                        System.out.println(object.getMessage());
+                        GameData game = object.getGameData();
+                        client.printBoard(object.getColor(),game);
                     }
-
-                    System.out.println(message);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
