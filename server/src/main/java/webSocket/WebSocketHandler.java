@@ -7,6 +7,7 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import service.AuthService;
 import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.ServerMessage;
@@ -25,6 +26,8 @@ public class WebSocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
     private SQLGameDAO gameDAO = new SQLGameDAO();
+    private SQLAuthDAO authDAO = new SQLAuthDAO();
+    private AuthService authService = new AuthService(authDAO);
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, DataAccessException {
@@ -37,35 +40,44 @@ public class WebSocketHandler {
 
     private void joinPlayer(Session session, JoinPlayerCommand command) throws IOException, DataAccessException {
         int gameID = command.getGameID();
-        var connection = new Connection(command.userName,gameID,session);
+        String userName = authDAO.getUser(command.authToken);
+
+        var connection = new Connection(userName,gameID,session);
         ConnectionManager inGame = new ConnectionManager();
 
-        var message = String.format("%s has joined the game as %s", command.userName, command.teamColor);
+        var message = String.format("%s has joined the game as %s", userName, command.playerColor);
         GameData game = gameDAO.getGame(command.getGameID());
 
-        if(command.teamColor == ChessGame.TeamColor.WHITE){
-            if(!(Objects.equals(command.userName, game.whiteUsername()))){
+        if(command.playerColor == null){
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: No color"));
+            connection.send(error);
+            return;
+        }
+        if(command.playerColor == ChessGame.TeamColor.WHITE){
+            if(!(Objects.equals(userName, game.whiteUsername()))){
                 String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Spot already taken"));
                 connection.send(error);
+                return;
             }
         }
-        if(command.teamColor == ChessGame.TeamColor.BLACK){
-            if(!(Objects.equals(command.userName, game.blackUsername()))){
+        if(command.playerColor == ChessGame.TeamColor.BLACK){
+            if(!(Objects.equals(userName, game.blackUsername()))){
                 String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Spot already taken"));
                 connection.send(error);
+                return;
             }
         }
 
-        connections.add(command.userName, session, command.authToken, gameID);
+        connections.add(userName, session, command.authToken, gameID);
 
-        inGame.setMap(inGame.findInGame(gameID));
+        inGame.setMap(inGame.findInGame(gameID, connections.getMap()));
 
         var loadGame = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
-        loadGame.setColor(command.teamColor);
+        loadGame.setColor(command.playerColor);
         connection.send(new Gson().toJson(loadGame));
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
-        inGame.broadcast(command.userName, notification);
+        inGame.broadcast(userName, notification);
     }
 
     /*private void exit(String visitorName) throws IOException {

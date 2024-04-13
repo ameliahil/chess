@@ -20,13 +20,16 @@ public class ConnectionManager {
     public void setMap(ConcurrentHashMap<String, Connection> connections){
         this.connections = connections;
     }
+    public ConcurrentHashMap<String, Connection> getMap(){
+        return connections;
+    }
 
     public void remove(String userName) {
         connections.remove(userName);
     }
-    public ConcurrentHashMap<String,Connection> findInGame(int gameID){
+    public ConcurrentHashMap<String,Connection> findInGame(int gameID, ConcurrentHashMap<String,Connection> allConnections){
         ConcurrentHashMap<String,Connection> inGame = new ConcurrentHashMap<>();
-        for (Map.Entry<String, Connection> entry : connections.entrySet()) {
+        for (Map.Entry<String, Connection> entry : allConnections.entrySet()) {
             Connection value = entry.getValue();
             if(value.gameID == gameID){
                 inGame.put(entry.getKey(), entry.getValue());

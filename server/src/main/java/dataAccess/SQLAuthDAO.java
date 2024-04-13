@@ -65,17 +65,18 @@ public class SQLAuthDAO implements AuthDAO{
 
     public String getUser(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username from authTokens WHERE authToken=?";
+            var statement = "SELECT username FROM authTokens WHERE authToken=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
-                    if (!rs.next()) {
+                    if (rs.next()) {
+                        return rs.getString("username");
+                    } else {
                         throw new DataAccessException("Error: unauthorized");
                     }
-                    return rs.getString("username");
                 }
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
     }
