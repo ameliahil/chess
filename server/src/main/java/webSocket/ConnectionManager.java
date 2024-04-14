@@ -8,6 +8,7 @@ import webSocketMessages.serverMessages.ServerMessage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
@@ -37,6 +38,14 @@ public class ConnectionManager {
         }
         return inGame;
     }
+    public Connection findConnection(String userName){
+        for (var c : connections.values()){
+            if(Objects.equals(c.userName, userName)){
+                return c;
+            }
+        }
+        return null;
+    }
 
     public void broadcast(String excludeUserName, ServerMessage notification) throws IOException {
         var removeList = new ArrayList<Connection>();
@@ -56,4 +65,5 @@ public class ConnectionManager {
             connections.remove(c.userName);
         }
     }
+
 }

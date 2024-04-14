@@ -23,6 +23,27 @@ public class SQLGameDAO implements GameDAO {
         var newStatement = "TRUNCATE autoIncrement";
         manager.executeUpdate(newStatement);
     }
+
+    public void updateGame(int gameID, ChessGame implementation) throws DataAccessException {
+        GameData oldGame = getGame(gameID);
+        String whiteUsername = oldGame.whiteUsername();
+        String blackUsername = oldGame.blackUsername();
+        String gameName = oldGame.gameName();
+        String jsonGame = new Gson().toJson(implementation);
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, implementation);
+        String json = new Gson().toJson(newGame);
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "UPDATE games SET implementation = ?, json = ? WHERE gameID = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setObject(1, jsonGame);
+                ps.setObject(2, json);
+                ps.setInt(3, gameID);
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
     public CreateGameResponse createGame(String whiteUsername, String blackUsername, String gameName) throws DataAccessException {
         if(gameExists(gameName)) {
             throw new DataAccessException("Error: already taken");

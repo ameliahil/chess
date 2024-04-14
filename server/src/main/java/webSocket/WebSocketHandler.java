@@ -1,6 +1,6 @@
 package webSocket;
 
-import chess.ChessGame;
+import chess.*;
 import com.google.gson.Gson;
 import dataAccess.*;
 import model.GameData;
@@ -13,6 +13,7 @@ import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinObserverCommand;
 import webSocketMessages.userCommands.JoinPlayerCommand;
+import webSocketMessages.userCommands.MakeMoveCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
@@ -40,6 +41,10 @@ public class WebSocketHandler {
         else if(command.getCommandType() == UserGameCommand.CommandType.JOIN_OBSERVER){
             JoinObserverCommand joinCommand = new Gson().fromJson(message, JoinObserverCommand.class);
             joinObserver(session, joinCommand);
+        }
+        else if(command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE){
+            MakeMoveCommand makeMoveCommand = new Gson().fromJson(message,MakeMoveCommand.class);
+            makeMove(session, makeMoveCommand);
         }
     }
 
@@ -107,7 +112,7 @@ public class WebSocketHandler {
             userName = authDAO.getUser(command.authToken);
         }
         catch (DataAccessException e){
-            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Wrong game ID"));
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token"));
             var connection = new Connection(null,gameID,session);
             connection.send(error);
             return;
@@ -135,6 +140,50 @@ public class WebSocketHandler {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
         inGame.broadcast(userName, notification);
+    }
+    private void makeMove(Session session,MakeMoveCommand makeMoveCommand) throws DataAccessException, IOException {
+        int gameID = makeMoveCommand.getGameID();
+        ChessMove move = makeMoveCommand.getMove();
+        ChessPosition start = move.getStartPosition();
+        ChessPosition end = move.getEndPosition();
+        String userName = authDAO.getUser(makeMoveCommand.authToken);
+
+        char startCol = findCol(start.getColumn());
+        char endCol = findCol(end.getColumn());
+
+        GameData game = gameDAO.getGame(gameID);
+
+        ChessBoard board = game.implementation().getBoard();
+        ChessPiece piece = board.getPiece(end);
+        String blackUsername = game.blackUsername();
+
+        ConnectionManager inGame = new ConnectionManager();
+        inGame.setMap(inGame.findInGame(gameID, connections.getMap()));
+
+        var message = String.format("%s has moved %s from %s%s to %s%s", userName, piece.getPieceType(),startCol,start.getRow(),endCol,end.getRow());
+
+        var loadGame = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
+        loadGame.setColor(ChessGame.TeamColor.WHITE);
+        inGame.broadcast(blackUsername,loadGame);
+        loadGame.setColor((ChessGame.TeamColor.BLACK));
+        connections.findConnection(blackUsername).send(new Gson().toJson(loadGame));
+
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        notification.addMessage(message);
+        inGame.broadcast(userName, notification);
+    }
+    private char findCol(int colInt){
+        switch (colInt) {
+            case 8 -> {return 'a';}
+            case 7 -> {return 'b';}
+            case 6 -> {return 'c';}
+            case 5 -> {return 'd';}
+            case 4 -> {return 'e';}
+            case 3 -> {return 'f';}
+            case 2 -> {return 'g';}
+            case 1 -> {return 'h';}
+        }
+        return ' ';
     }
 
     /*private void exit(String visitorName) throws IOException {
