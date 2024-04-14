@@ -19,8 +19,8 @@ public class ServerMessage {
         NOTIFICATION
     }
 
-    public ServerMessage(ServerMessageType type) {
-        this.serverMessageType = type;
+    public ServerMessage(ServerMessageType serverMessageType) {
+        this.serverMessageType = serverMessageType;
     }
 
     public void addMessage(String sentMessage){

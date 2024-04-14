@@ -68,7 +68,7 @@ public class ChessGame {
         return validMoves;
     }
 
-    private boolean isMoveValid(ChessMove move, TeamColor color){
+    public boolean isMoveValid(ChessMove move, TeamColor color){
         return !putsKingInDanger(move, chessBoard, color);
     }
 

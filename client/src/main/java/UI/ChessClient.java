@@ -1,11 +1,9 @@
 package UI;
 
 import Requests.*;
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import dataAccess.DataAccessException;
+import dataAccess.SQLGameDAO;
 import model.UserData;
 import webSocket.NotificationHandler;
 import webSocket.WebSocketFacade;
@@ -17,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.zip.CheckedInputStream;
 
 import static UI.EscapeSequences.*;
 
@@ -25,7 +24,11 @@ public class ChessClient {
     private final ServerFacade server;
     private String user = "";
 
+    private SQLGameDAO gameDAO = new SQLGameDAO();
+    private ChessGame.TeamColor color;
+
     private String authToken;
+    private int gameID;
     private final String url;
     private HashMap<Integer, Integer> idMap = new HashMap<>();
     private NotificationHandler notificationHandler;
@@ -50,6 +53,8 @@ public class ChessClient {
                 case "join" -> joinGame(params);
                 case "observe" -> observeGame(params);
                 case "leave" -> leave(params);
+                case "move" -> makeMove(params);
+                case "redraw" -> redrawBoard(params);
                 case "quit" -> "quit";
                 case null, default -> help();
             };
@@ -143,7 +148,9 @@ public class ChessClient {
                 }else if(params[1].equals("black")){
                     color = ChessGame.TeamColor.BLACK;
                 }
+                this.color = color;
                 int gameID = idMap.get(gameNum);
+                this.gameID = gameID;
                 JoinRequest join = new JoinRequest(color,gameID);
                 server.joinGame(join);
                 WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
@@ -161,13 +168,16 @@ public class ChessClient {
     }
     public String observeGame(String... params) throws DataAccessException{
         if(params.length == 1){
-            if((state == State.SIGNEDIN || state == State.INGAME) && !idMap.isEmpty()) {
+            if((state == State.SIGNEDIN) && !idMap.isEmpty()) {
+                color = ChessGame.TeamColor.WHITE;
                 int gameNum = Integer.parseInt(params[0]);
                 int gameID = idMap.get(gameNum);
                 JoinRequest join = new JoinRequest(null,gameID);
+                this.gameID = gameID;
                 server.joinGame(join);
+                WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
+                ws.joinObserve(authToken,gameID);
                 state = State.INGAME;
-                //printBoard(ChessGame.TeamColor.WHITE);
                 return String.format("You joined game %s as an observer.", gameNum);
             }
             else{
@@ -177,6 +187,79 @@ public class ChessClient {
         else{
             throw new DataAccessException("Wrong number of parameters");
         }
+    }
+
+    public String redrawBoard(String... params) throws DataAccessException {
+        if(params.length == 0){
+            GameData gameData = gameDAO.getGame(gameID);
+            printBoard(color, gameData);
+        }
+        return "";
+    }
+
+    public String makeMove(String... params) throws DataAccessException {
+        if((params.length == 2) || (params.length == 3)){
+            if(state == State.INGAME) {
+                String start = (params[0]);
+                String end = params[1];
+                String promotion = null;
+                ChessPiece.PieceType promotionPiece = null;
+                if(params.length == 3) {
+                    promotion = params[2];
+                    promotionPiece = findPiece(promotion);
+                }
+                GameData game = gameDAO.getGame(gameID);
+                ChessGame implementation = game.implementation();
+                int startCol = findCol(start.charAt(0));
+                int startRow = start.charAt(1) - '0';
+                int endCol = findCol(end.charAt(0));
+                int endRow = end.charAt(1) - '0';
+                ChessPosition startPosition = new ChessPosition(startRow,startCol);
+                ChessPosition endPosition = new ChessPosition(endRow,endCol);
+                ChessMove move = new ChessMove(startPosition,endPosition,promotionPiece);
+
+                try{implementation.makeMove(move);}
+                catch (InvalidMoveException e) {
+                    throw new RuntimeException(e);
+                }
+                gameDAO.updateGame(gameID,implementation);
+
+                WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
+                ws.makeMove(authToken,gameID, move);
+                state = State.INGAME;
+                return "";
+            }
+            else{
+                throw new DataAccessException("Not logged in");
+            }
+        }
+        else{
+            throw new DataAccessException("Wrong number of parameters");
+        }
+    }
+
+    private ChessPiece.PieceType findPiece(String piece){
+        switch(piece){
+            case "queen" -> {return ChessPiece.PieceType.QUEEN;}
+            case "rook" -> {return ChessPiece.PieceType.ROOK;}
+            case "bishop" -> {return ChessPiece.PieceType.BISHOP;}
+            case "knight" -> {return ChessPiece.PieceType.KNIGHT;}
+            default -> {return null;}
+        }
+    }
+
+    private int findCol(char colChar){
+        switch (colChar) {
+            case 'a' -> {return 8;}
+            case 'b' -> {return 7;}
+            case 'c' -> {return 6;}
+            case 'd' -> {return 5;}
+            case 'e' -> {return 4;}
+            case 'f' -> {return 3;}
+            case 'g' -> {return 2;}
+            case 'h' -> {return 1;}
+        }
+        return -1;
     }
 
     public String leave(String... params) throws DataAccessException {
@@ -214,7 +297,7 @@ public class ChessClient {
                 """;}
         return """
                 redraw - redraw the chess board
-                move <start square> <end square> - join a game! make sure to list games first
+                move <start square> <end square> <promotion piece> - join a game! make sure to list games first
                 highlight <square> - what moves can your piece play!
                 leave - would you like to leave the game?
                 resign - you will forfeit the game!
@@ -222,7 +305,7 @@ public class ChessClient {
                 """;
     }
 
-    public void printBoard(ChessGame.TeamColor color,GameData game){
+    public void printBoard(ChessGame.TeamColor color, GameData game){
         ChessGame chessGame = game.implementation();
         ChessBoard board = chessGame.getBoard();
 

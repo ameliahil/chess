@@ -2,6 +2,7 @@ package webSocket;
 
 import UI.ChessClient;
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataAccess.DataAccessException;
@@ -10,7 +11,9 @@ import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCommand;
 import webSocketMessages.userCommands.JoinPlayerCommand;
+import webSocketMessages.userCommands.MakeMoveCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import javax.websocket.*;
@@ -47,7 +50,7 @@ public class WebSocketFacade extends Endpoint {
                         System.out.println(object.getMessage());
                     }
                     else if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION){
-                        Notification object = new Gson().fromJson(message,Notification.class);
+                        ServerMessage object = new Gson().fromJson(message,ServerMessage.class);
                         System.out.println(object.getMessage());
                     }
                     else if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME){
@@ -82,6 +85,22 @@ public class WebSocketFacade extends Endpoint {
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new DataAccessException(ex.getMessage());
+        }
+    }
+    public void joinObserve(String authToken, int gameID) throws DataAccessException {
+        try {
+            JoinObserverCommand command = new JoinObserverCommand(authToken,gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
+    public void makeMove(String authToken, int gameID, ChessMove move) throws DataAccessException {
+        try{
+            MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move);
+            this.session.getBasicRemote().sendText((new Gson().toJson(command)));
+        } catch (IOException e) {
+            throw new DataAccessException(e.getMessage());
         }
     }
 
