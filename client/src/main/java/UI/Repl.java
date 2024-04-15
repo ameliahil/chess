@@ -37,8 +37,4 @@ public class Repl implements NotificationHandler {
         System.out.print("\n");
     }
 
-    @Override
-    public void notify(ServerMessage notification) {
-        System.out.println(notification.getMessage());
-    }
 }
