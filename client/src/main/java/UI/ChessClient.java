@@ -421,47 +421,13 @@ public class ChessClient {
             ends.add(move.getEndPosition());
         }
 
-
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
+        char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
         System.out.print(SET_TEXT_BOLD);
 
-        char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-
-        if (color == ChessGame.TeamColor.WHITE) {
-            System.out.print("  ");
-            for (char letter : letters) {
-                System.out.print(letter + "   ");
-            }
-            System.out.println();
-
-            for (int y = 0; y < 8; y++) {
-                int row = 8 - y;
-                System.out.print(SET_TEXT_COLOR_WHITE + row + " ");
-                System.out.print(SET_TEXT_COLOR_BLACK);
-                for (int x = 0; x < 8; x++) {
-                    boolean isWhite = (x + y) % 2 == 0;
-                    ChessPosition newPos = new ChessPosition(8 - y, 8 - x);
-                    boolean isPosMove = isInEnds(newPos,ends);
-                    boolean isStart = newPos.equals(startPosition);
-                    String piece = findPiece(y, x, board);
-                    String backgroundColor;
-                    if (isPosMove) {
-                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_YELLOW : SET_BG_COLOR_LIGHT_MAGENTA;
-                    }
-                    else if(isStart){
-                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_GREY: SET_BG_COLOR_DARK_GREEN;
-                    }
-                    else {
-                        backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
-                    }
-                    System.out.print(backgroundColor + piece);
-                }
-                System.out.println(EscapeSequences.RESET_BG_COLOR);
-            }
-            System.out.println(EscapeSequences.RESET_BG_COLOR);
-        } else if (color == ChessGame.TeamColor.BLACK) {
+        if (color == ChessGame.TeamColor.BLACK) {
             System.out.print("  ");
             for (int i = 7; i > -1; i--) {
                 System.out.print(letters[i] + "   ");
@@ -494,10 +460,42 @@ public class ChessClient {
             }
             System.out.println(EscapeSequences.RESET_BG_COLOR);
         }
+        else if (color == ChessGame.TeamColor.WHITE) {
+            System.out.print("  ");
+            for (char letter : letters) {
+                System.out.print(letter + "   ");
+            }
+            System.out.println();
+
+            for (int y = 0; y <= 7; y++) {
+                int row = 8 - y;
+                System.out.print(SET_TEXT_COLOR_WHITE + row + " ");
+                System.out.print(SET_TEXT_COLOR_BLACK);
+                for (int x = 0; x <= 7; x++) {
+                    boolean isWhite = (x + y) % 2 == 0;
+                    ChessPosition newPos = new ChessPosition(8 - y, 8 - x);
+                    boolean isPosMove = isInEnds(newPos,ends);
+                    boolean isStart = newPos.equals(startPosition);
+                    String piece = findPiece(y, x, board);
+                    String backgroundColor;
+                    if (isPosMove) {
+                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_YELLOW : SET_BG_COLOR_LIGHT_MAGENTA;
+                    }
+                    else if(isStart){
+                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_GREY: SET_BG_COLOR_DARK_GREEN;
+                    }
+                    else {
+                        backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                    }
+                    System.out.print(backgroundColor + piece);
+                }
+                System.out.println(EscapeSequences.RESET_BG_COLOR);
+            }
+            System.out.println(EscapeSequences.RESET_BG_COLOR);
+        }
 
         System.out.print(SET_TEXT_COLOR_WHITE + SET_BG_COLOR_DARK_GREY + RESET_TEXT_BOLD_FAINT);
     }
-
     private String findPiece(int row, int col, ChessBoard board){
         ChessPosition position = new ChessPosition(8 - row,8 - col);
         ChessPiece piece = board.getPiece(position);

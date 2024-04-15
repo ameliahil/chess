@@ -38,14 +38,6 @@ public class ConnectionManager {
         }
         return inGame;
     }
-    public Connection findConnection(String userName){
-        for (var c : connections.values()){
-            if(Objects.equals(c.userName, userName)){
-                return c;
-            }
-        }
-        return null;
-    }
 
     public void broadcast(String excludeUserName, ServerMessage notification) throws IOException {
         var removeList = new ArrayList<String>();
