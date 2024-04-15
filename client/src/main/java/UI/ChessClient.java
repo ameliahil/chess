@@ -8,14 +8,12 @@ import model.UserData;
 import webSocket.NotificationHandler;
 import webSocket.WebSocketFacade;
 import model.GameData;
-import webSocketMessages.userCommands.JoinPlayerCommand;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.zip.CheckedInputStream;
 
 import static UI.EscapeSequences.*;
 

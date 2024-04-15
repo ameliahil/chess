@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import model.AuthData;
 
 import java.sql.SQLException;
-import java.util.UUID;
 
 public class SQLAuthDAO implements AuthDAO{
     DatabaseManager manager = new DatabaseManager();

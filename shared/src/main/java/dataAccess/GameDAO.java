@@ -2,7 +2,6 @@ package dataAccess;
 
 import Requests.CreateGameResponse;
 import Requests.ListGamesResponse;
-import model.GameData;
 
 import java.util.Collection;
 

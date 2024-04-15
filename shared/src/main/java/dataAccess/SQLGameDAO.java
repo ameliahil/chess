@@ -7,12 +7,10 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
 
-import javax.xml.crypto.Data;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class SQLGameDAO implements GameDAO {
