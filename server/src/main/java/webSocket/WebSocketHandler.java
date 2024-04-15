@@ -7,29 +7,20 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import service.AuthService;
 import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserverCommand;
-import webSocketMessages.userCommands.JoinPlayerCommand;
-import webSocketMessages.userCommands.MakeMoveCommand;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
-import java.util.Timer;
-
 
 @WebSocket
 public class WebSocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
-    private SQLGameDAO gameDAO = new SQLGameDAO();
-    private SQLAuthDAO authDAO = new SQLAuthDAO();
-    private AuthService authService = new AuthService(authDAO);
+    private final SQLGameDAO gameDAO = new SQLGameDAO();
+    private final SQLAuthDAO authDAO = new SQLAuthDAO();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, DataAccessException {
@@ -45,6 +36,14 @@ public class WebSocketHandler {
         else if(command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE){
             MakeMoveCommand makeMoveCommand = new Gson().fromJson(message,MakeMoveCommand.class);
             makeMove(session, makeMoveCommand);
+        }
+        else if(command.getCommandType() == UserGameCommand.CommandType.LEAVE){
+            LeaveCommand leaveCommand = new Gson().fromJson(message,LeaveCommand.class);
+            leave(session,leaveCommand);
+        }
+        else if(command.getCommandType() == UserGameCommand.CommandType.RESIGN){
+            ResignCommand resignCommand = new Gson().fromJson(message,ResignCommand.class);
+            resign(session,resignCommand);
         }
     }
 
@@ -117,6 +116,7 @@ public class WebSocketHandler {
             connection.send(error);
             return;
         }
+
         ConnectionManager inGame = new ConnectionManager();
         var connection = new Connection(userName,gameID,session);
 
@@ -146,12 +146,57 @@ public class WebSocketHandler {
         ChessMove move = makeMoveCommand.getMove();
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
-        String userName = authDAO.getUser(makeMoveCommand.authToken);
+        String userName = null;
+        ChessGame.TeamColor color = null;
+        try{
+            userName = authDAO.getUser(makeMoveCommand.authToken);
+        }catch (DataAccessException e){
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token"));
+            var connection = new Connection(null,gameID,session);
+            connection.send(error);
+            return;
+        }
+
+
+        GameData game = gameDAO.getGame(gameID);
+        ChessGame implementation = game.implementation();
+
+        String otherUserName = null;
+        ChessGame.TeamColor otherColor = null;
+        if(Objects.equals(game.whiteUsername(), userName)){
+            color = ChessGame.TeamColor.WHITE;
+            otherColor = ChessGame.TeamColor.BLACK;
+            otherUserName = game.blackUsername();
+        } else if (game.blackUsername().equals(userName)) {
+            color = ChessGame.TeamColor.BLACK;
+            otherColor = ChessGame.TeamColor.WHITE;
+            otherUserName = game.whiteUsername();
+        }
+        if(!Objects.equals(color, game.implementation().getTeamTurn())){
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token"));
+            var connection = new Connection(userName,gameID,session);
+            connection.send(error);
+            return;
+        }
+        if(game.implementation().isGameOver()){
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Game is Over"));
+            var connection = new Connection(userName,gameID,session);
+            connection.send(error);
+            return;
+        }
+
+        try{implementation.makeMove(move);}
+        catch (InvalidMoveException e) {
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Move. Why dont you learn the rules of chess before you hop on here buddy."));
+            var connection = new Connection(userName,gameID,session);
+            connection.send(error);
+            return;
+        }
+
+        gameDAO.updateGame(gameID,implementation);
 
         char startCol = findCol(start.getColumn());
         char endCol = findCol(end.getColumn());
-
-        GameData game = gameDAO.getGame(gameID);
 
         ChessBoard board = game.implementation().getBoard();
         ChessPiece piece = board.getPiece(end);
@@ -171,35 +216,80 @@ public class WebSocketHandler {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
         inGame.broadcast(userName, notification);
+
+        if(implementation.isInCheck(otherColor)){
+            var checkNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            notification.addMessage(String.format("%s is in check",otherUserName));
+            inGame.broadcast(null, checkNotification);
+        }
+        if(implementation.isInCheckmate(otherColor)){
+            var checkNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            notification.addMessage(String.format("%s is in checkmate",otherUserName));
+            inGame.broadcast(null, checkNotification);
+            implementation.setGameOver();
+            gameDAO.updateGame(gameID,implementation);
+        }
+        if(implementation.isInStalemate(otherColor)){
+            var checkNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            notification.addMessage(String.format("%s is in stalemate",otherUserName));
+            inGame.broadcast(null, checkNotification);
+            implementation.setGameOver();
+            gameDAO.updateGame(gameID,implementation);
+        }
     }
+
+
+    private void leave(Session session, LeaveCommand leaveCommand) throws IOException, DataAccessException {
+        connections.remove(leaveCommand.authToken);
+        String username = authDAO.getUser(leaveCommand.authToken);
+
+        var message = String.format("%s left the game", username);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        notification.addMessage(message);
+        ConnectionManager inGame = new ConnectionManager();
+        inGame.setMap(inGame.findInGame(leaveCommand.getGameID(), connections.getMap()));
+        inGame.broadcast(username, notification);
+    }
+    private void resign(Session session, ResignCommand resignCommand) throws IOException, DataAccessException {
+        String username = authDAO.getUser(resignCommand.authToken);
+        GameData game = gameDAO.getGame(resignCommand.getGameID());
+        if(game.implementation().isGameOver()){
+            Connection connection = connections.findConnection(username);
+            var error = new Error(ServerMessage.ServerMessageType.ERROR,"Error: Game is Already Over");
+            connection.send(new Gson().toJson(error));
+            return;
+        }
+
+        if(username.equals(game.blackUsername()) || username.equals(game.whiteUsername())) {
+            var message = String.format("%s resigned the game", username);
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            notification.addMessage(message);
+            ConnectionManager inGame = new ConnectionManager();
+            inGame.setMap(inGame.findInGame(resignCommand.getGameID(), connections.getMap()));
+            inGame.broadcast(null, notification);
+
+            game.implementation().setGameOver();
+            gameDAO.updateGame(resignCommand.getGameID(), game.implementation());
+        }
+        else{
+            Connection connection = connections.findConnection(username);
+            var error = new Error(ServerMessage.ServerMessageType.ERROR,"Error: Observer Can't Resign");
+            connection.send(new Gson().toJson(error));
+        }
+    }
+
     private char findCol(int colInt){
-        switch (colInt) {
-            case 8 -> {return 'a';}
-            case 7 -> {return 'b';}
-            case 6 -> {return 'c';}
-            case 5 -> {return 'd';}
-            case 4 -> {return 'e';}
-            case 3 -> {return 'f';}
-            case 2 -> {return 'g';}
-            case 1 -> {return 'h';}
+            switch (colInt) {
+                case 8 -> {return 'a';}
+                case 7 -> {return 'b';}
+                case 6 -> {return 'c';}
+                case 5 -> {return 'd';}
+                case 4 -> {return 'e';}
+                case 3 -> {return 'f';}
+                case 2 -> {return 'g';}
+                case 1 -> {return 'h';}
+            }
+            return ' ';
         }
-        return ' ';
-    }
 
-    /*private void exit(String visitorName) throws IOException {
-        connections.remove(visitorName);
-        var message = String.format("%s left the shop", visitorName);
-        var notification = new Notification(Notification.Type.DEPARTURE, message);
-        connections.broadcast(visitorName, notification);
-    }
-
-    public void makeNoise(String petName, String sound) throws ResponseException {
-        try {
-            var message = String.format("%s says %s", petName, sound);
-            var notification = new Notification(Notification.Type.NOISE, message);
-            connections.broadcast("", notification);
-        } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
-    }*/
 }
