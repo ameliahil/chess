@@ -13,9 +13,17 @@ import java.util.Iterator;
 public class ChessGame {
     private ChessBoard chessBoard = null;
     private TeamColor currTurn = TeamColor.WHITE;
+    private boolean gameOver = false;
 
     public ChessGame() {
 
+    }
+
+    public void setGameOver() {
+        gameOver = true;
+    }
+    public boolean isGameOver(){
+        return gameOver;
     }
 
     /**

@@ -55,6 +55,8 @@ public class ChessClient {
                 case "leave" -> leave(params);
                 case "move" -> makeMove(params);
                 case "redraw" -> redrawBoard(params);
+                case "resign" -> resign(params);
+                case "highlight" -> highlightLegalMoves(params);
                 case "quit" -> "quit";
                 case null, default -> help();
             };
@@ -208,8 +210,7 @@ public class ChessClient {
                     promotion = params[2];
                     promotionPiece = findPiece(promotion);
                 }
-                GameData game = gameDAO.getGame(gameID);
-                ChessGame implementation = game.implementation();
+
                 int startCol = findCol(start.charAt(0));
                 int startRow = start.charAt(1) - '0';
                 int endCol = findCol(end.charAt(0));
@@ -217,12 +218,6 @@ public class ChessClient {
                 ChessPosition startPosition = new ChessPosition(startRow,startCol);
                 ChessPosition endPosition = new ChessPosition(endRow,endCol);
                 ChessMove move = new ChessMove(startPosition,endPosition,promotionPiece);
-
-                try{implementation.makeMove(move);}
-                catch (InvalidMoveException e) {
-                    throw new RuntimeException(e);
-                }
-                gameDAO.updateGame(gameID,implementation);
 
                 WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
                 ws.makeMove(authToken,gameID, move);
@@ -265,6 +260,8 @@ public class ChessClient {
     public String leave(String... params) throws DataAccessException {
         if(params.length == 0){
             if(state == State.INGAME) {
+                WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
+                ws.leave(authToken,gameID);
                 state = State.SIGNEDIN;
                 return "You left the game.";
             }
@@ -275,6 +272,24 @@ public class ChessClient {
         else{
             throw new DataAccessException("Wrong number of parameters");
         }
+    }
+    public String resign(String... params) throws DataAccessException{
+        if(params.length == 0){
+            if(state == State.INGAME){
+                WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
+                ws.resign(authToken,gameID);
+                return "";
+            }
+            else{
+                throw new DataAccessException("Not logged in");
+            }
+        }
+        else{
+            throw new DataAccessException("Wrong number of parameters");
+        }
+    }
+    public String highlightLegalMoves(String... params) throws DataAccessException{
+        return "";
     }
     public String help(){
         if(state == State.SIGNEDOUT){
