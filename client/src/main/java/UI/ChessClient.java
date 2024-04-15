@@ -11,9 +11,7 @@ import model.GameData;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 import static UI.EscapeSequences.*;
 
@@ -71,6 +69,7 @@ public class ChessClient {
             authToken = loginResponse.authToken();
             state = State.SIGNEDIN;
             user = loginResponse.username();
+            help();
             return String.format("You signed in as %s.", user);
         }
         else{
@@ -84,6 +83,7 @@ public class ChessClient {
             authToken = registerResponse.authToken();
             state = State.SIGNEDIN;
             user = registerResponse.username();
+            help();
             return String.format("You signed in as %s.", user);
         }
         else{
@@ -156,6 +156,7 @@ public class ChessClient {
                 WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
                 ws.joinPlayer(authToken,gameID,color);
                 state = State.INGAME;
+                help();
                 return String.format("You joined game as %s.", params[1]);
             }
             else{
@@ -274,9 +275,21 @@ public class ChessClient {
     public String resign(String... params) throws DataAccessException{
         if(params.length == 0){
             if(state == State.INGAME){
-                WebSocketFacade ws = new WebSocketFacade(url,notificationHandler);
-                ws.resign(authToken,gameID);
-                return "";
+                Scanner scanner = new Scanner(System.in);
+                System.out.println("Are you sure you want to resign? (Y/N)");
+                String userInput = scanner.nextLine().toUpperCase();
+
+                if (userInput.equals("Y")) {
+                    WebSocketFacade ws = new WebSocketFacade(url, notificationHandler);
+                    ws.resign(authToken, gameID);
+                    return "";
+                } else if (userInput.equals("N")) {
+                    System.out.println("Resignation canceled.");
+                    return "";
+                } else {
+                    System.out.println("Invalid input. Please enter 'Y' or 'N'.");
+                    return "";
+                }
             }
             else{
                 throw new DataAccessException("Not logged in");
@@ -287,7 +300,24 @@ public class ChessClient {
         }
     }
     public String highlightLegalMoves(String... params) throws DataAccessException{
-        return "";
+        if(params.length == 1) {
+            if (state == State.INGAME) {
+                String start = params[0];
+                int startCol = findCol(start.charAt(0));
+                int startRow = start.charAt(1) - '0';
+                ChessPosition startPosition = new ChessPosition(startRow,startCol);
+                GameData game = gameDAO.getGame(gameID);
+                ChessGame.TeamColor color = game.implementation().getBoard().getPiece(startPosition).getTeamColor();
+                highlightBoard(color,game,startPosition);
+            }
+            else{
+                throw new DataAccessException("Not logged in");
+            }
+        }
+        else{
+            throw new DataAccessException("Wrong number of parameters");
+        }
+        return"";
     }
     public String help(){
         if(state == State.SIGNEDOUT){
@@ -310,7 +340,7 @@ public class ChessClient {
                 """;}
         return """
                 redraw - redraw the chess board
-                move <start square> <end square> <promotion piece> - join a game! make sure to list games first
+                move <start square> <end square> <promotion piece> - where are you going?
                 highlight <square> - what moves can your piece play!
                 leave - would you like to leave the game?
                 resign - you will forfeit the game!
@@ -364,6 +394,100 @@ public class ChessClient {
                     String piece = findPiece(y, x, board);
                     boolean isWhite = (x + y) % 2 == 0;
                     String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                    System.out.print(backgroundColor + piece);
+                }
+                System.out.println(EscapeSequences.RESET_BG_COLOR);
+            }
+            System.out.println(EscapeSequences.RESET_BG_COLOR);
+        }
+
+        System.out.print(SET_TEXT_COLOR_WHITE + SET_BG_COLOR_DARK_GREY + RESET_TEXT_BOLD_FAINT);
+    }
+
+    private boolean isInEnds(ChessPosition position, Collection<ChessPosition> ends){
+        for(ChessPosition endPosition: ends){
+            if(position.equals(endPosition)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public void highlightBoard(ChessGame.TeamColor color, GameData game, ChessPosition startPosition){
+        ChessGame chessGame = game.implementation();
+        ChessBoard board = chessGame.getBoard();
+        Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
+        Collection<ChessPosition> ends = new HashSet<>();
+        for(ChessMove move : validMoves){
+            ends.add(move.getEndPosition());
+        }
+
+
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print(ERASE_SCREEN);
+
+        System.out.print(SET_TEXT_BOLD);
+
+        char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+
+        if (color == ChessGame.TeamColor.WHITE) {
+            System.out.print("  ");
+            for (char letter : letters) {
+                System.out.print(letter + "   ");
+            }
+            System.out.println();
+
+            for (int y = 0; y < 8; y++) {
+                int row = 8 - y;
+                System.out.print(SET_TEXT_COLOR_WHITE + row + " ");
+                System.out.print(SET_TEXT_COLOR_BLACK);
+                for (int x = 0; x < 8; x++) {
+                    boolean isWhite = (x + y) % 2 == 0;
+                    ChessPosition newPos = new ChessPosition(8 - y, 8 - x);
+                    boolean isPosMove = isInEnds(newPos,ends);
+                    boolean isStart = newPos.equals(startPosition);
+                    String piece = findPiece(y, x, board);
+                    String backgroundColor;
+                    if (isPosMove) {
+                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_YELLOW : SET_BG_COLOR_LIGHT_MAGENTA;
+                    }
+                    else if(isStart){
+                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_GREY: SET_BG_COLOR_DARK_GREEN;
+                    }
+                    else {
+                        backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                    }
+                    System.out.print(backgroundColor + piece);
+                }
+                System.out.println(EscapeSequences.RESET_BG_COLOR);
+            }
+            System.out.println(EscapeSequences.RESET_BG_COLOR);
+        } else if (color == ChessGame.TeamColor.BLACK) {
+            System.out.print("  ");
+            for (int i = 7; i > -1; i--) {
+                System.out.print(letters[i] + "   ");
+            }
+            System.out.println();
+
+            for (int y = 7; y > -1; y--) {
+                int row = 8 - y;
+                System.out.print(SET_TEXT_COLOR_WHITE + row + " ");
+                System.out.print(SET_TEXT_COLOR_BLACK);
+                for (int x = 7; x > -1; x--) {
+                    boolean isWhite = (x + y) % 2 == 0;
+                    ChessPosition newPos = new ChessPosition(8 - y, 8 - x);
+                    boolean isStart = newPos.equals(startPosition);
+                    boolean isPosMove = isInEnds(newPos,ends);
+                    String backgroundColor;
+                    String piece = findPiece(y, x, board);
+                    if (isPosMove) {
+                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_YELLOW : SET_BG_COLOR_LIGHT_MAGENTA;
+                    }
+                    else if(isStart){
+                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_GREY: SET_BG_COLOR_DARK_GREEN;
+                    }
+                    else {
+                        backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
+                    }
                     System.out.print(backgroundColor + piece);
                 }
                 System.out.println(EscapeSequences.RESET_BG_COLOR);

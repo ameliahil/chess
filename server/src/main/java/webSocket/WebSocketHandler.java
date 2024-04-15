@@ -129,7 +129,7 @@ public class WebSocketHandler {
 
         connections.add(userName, session, command.authToken, gameID);
 
-        var message = String.format("%s has joined the game as %s", userName, command.playerColor);
+        var message = String.format("%s has joined the game as observer", userName);
         GameData game = gameDAO.getGame(command.getGameID());
 
         inGame.setMap(inGame.findInGame(gameID, connections.getMap()));
@@ -208,30 +208,36 @@ public class WebSocketHandler {
         var message = String.format("%s has moved %s from %s%s to %s%s", userName, piece.getPieceType(),startCol,start.getRow(),endCol,end.getRow());
 
         var loadGame = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
+
         loadGame.setColor(ChessGame.TeamColor.WHITE);
         inGame.broadcast(blackUsername,loadGame);
-        loadGame.setColor((ChessGame.TeamColor.BLACK));
-        connections.findConnection(blackUsername).send(new Gson().toJson(loadGame));
+
+        var loadGameBlack = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
+
+        loadGameBlack.setColor((ChessGame.TeamColor.BLACK));
+        Connection connection = connections.findConnection(blackUsername);
+        String newMessage = new Gson().toJson(loadGameBlack);
+        connection.send(newMessage);
 
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
         inGame.broadcast(userName, notification);
 
-        if(implementation.isInCheck(otherColor)){
-            var checkNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            notification.addMessage(String.format("%s is in check",otherUserName));
-            inGame.broadcast(null, checkNotification);
-        }
         if(implementation.isInCheckmate(otherColor)){
             var checkNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            notification.addMessage(String.format("%s is in checkmate",otherUserName));
+            checkNotification.addMessage(String.format("%s is in checkmate",otherUserName));
             inGame.broadcast(null, checkNotification);
             implementation.setGameOver();
             gameDAO.updateGame(gameID,implementation);
         }
-        if(implementation.isInStalemate(otherColor)){
+        else if(implementation.isInCheck(otherColor)){
             var checkNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            notification.addMessage(String.format("%s is in stalemate",otherUserName));
+            checkNotification.addMessage(String.format("%s is in check",otherUserName));
+            inGame.broadcast(null, checkNotification);
+        }
+        else if(implementation.isInStalemate(otherColor)){
+            var checkNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            checkNotification.addMessage(String.format("%s is in stalemate",otherUserName));
             inGame.broadcast(null, checkNotification);
             implementation.setGameOver();
             gameDAO.updateGame(gameID,implementation);
