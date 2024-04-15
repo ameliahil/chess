@@ -341,8 +341,8 @@ public class ChessClient {
                 System.out.print(SET_TEXT_COLOR_WHITE + row + " ");
                 System.out.print(SET_TEXT_COLOR_BLACK);
                 for (int x = 0; x < 8; x++) {
-                    String piece = findPiece(y, x, board);
                     boolean isWhite = (x + y) % 2 == 0;
+                    String piece = findPiece(y, x, board);
                     String backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;
                     System.out.print(backgroundColor + piece);
                 }
