@@ -151,8 +151,8 @@ public class WebSocketHandler {
         try{
             userName = authDAO.getUser(makeMoveCommand.authToken);
         }catch (DataAccessException e){
-            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token"));
             var connection = new Connection(null,gameID,session);
+            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token"));
             connection.send(error);
             return;
         }

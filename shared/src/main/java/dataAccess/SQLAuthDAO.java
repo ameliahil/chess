@@ -13,13 +13,6 @@ public class SQLAuthDAO implements AuthDAO{
         manager.executeUpdate(statement);
     }
 
-
-    /*public String createAuth(String username) throws DataAccessException {
-        String token = UUID.randomUUID().toString();
-        addAuth(token,username);
-        return token;
-    }*/
-
     public void addAuth(String authToken, String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT authToken from authTokens WHERE authToken=?";

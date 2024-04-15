@@ -36,7 +36,7 @@ public class WebSocketFacade extends Endpoint {
 
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @OnMessage
+                @Override
                 public void onMessage(String message) {
                     ServerMessage serverMessage = new Gson().fromJson(message,ServerMessage.class);
 
@@ -60,18 +60,8 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    @OnOpen
+    @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-    }
-
-    public void sendCommand(UserGameCommand command) {
-        try{
-            String json = new Gson().toJson(command,UserGameCommand.class);
-            this.session.getBasicRemote().sendObject(json);
-        }
-        catch(Exception e){
-            System.out.println(e.getMessage());
-        }
     }
 
     public void joinPlayer(String authToken, int gameID, ChessGame.TeamColor color) throws DataAccessException {
