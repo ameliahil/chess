@@ -450,11 +450,11 @@ public class ChessClient {
                     boolean isStart = newPos.equals(startPosition);
                     String piece = findPiece(y, x, board);
                     String backgroundColor;
-                    if (!isPosMove == false) {
+                    if (isPosMove) {
                         backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_YELLOW : SET_BG_COLOR_LIGHT_MAGENTA;
                     }
-                    else if(isStart == true){
-                        backgroundColor = isWhite ? SET_BG_COLOR_LIGHT_GREY: SET_BG_COLOR_DARK_GREEN;
+                    else if(isStart){
+                        backgroundColor = SET_BG_COLOR_WHITE;
                     }
                     else {
                         backgroundColor = isWhite ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_MAGENTA;

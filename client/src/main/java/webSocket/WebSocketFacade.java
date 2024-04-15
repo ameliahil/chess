@@ -42,7 +42,11 @@ public class WebSocketFacade extends Endpoint {
 
                     if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR){
                         Error object = new Gson().fromJson(message,Error.class);
-                        System.out.println("Error");
+                        if(object.getMessage() == null){
+                            System.out.println("Error");
+                        }else {
+                            System.out.println(object.getMessage());
+                        }
                     }
                     else if(serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION){
                         ServerMessage object = new Gson().fromJson(message,ServerMessage.class);

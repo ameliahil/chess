@@ -175,7 +175,7 @@ public class WebSocketHandler {
             otherUserName = game.whiteUsername();
         }
         if(!Objects.equals(color, game.implementation().getTeamTurn())){
-            Error error = new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token");
+            Error error = new Error(ServerMessage.ServerMessageType.ERROR, "Error: Umm why don't you wait your turn maybe");
             inGame.broadcastSolo(userName,error);
             return;
         }
@@ -187,7 +187,7 @@ public class WebSocketHandler {
 
         try{implementation.makeMove(move);}
         catch (InvalidMoveException e) {
-            Error error = new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Move. Why dont you learn the rules of chess before you hop on here buddy.");
+            Error error = new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Move. Why don't you learn the rules of chess before you hop on here buddy.");
             inGame.broadcastSolo(userName,error);
             return;
         }
