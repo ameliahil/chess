@@ -1,5 +1,4 @@
 package UI;
-
 import Requests.*;
 import chess.*;
 import dataAccess.DataAccessException;
@@ -8,21 +7,17 @@ import model.UserData;
 import webSocket.NotificationHandler;
 import webSocket.WebSocketFacade;
 import model.GameData;
-
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import static UI.EscapeSequences.*;
 
 public class ChessClient {
     private State state = State.SIGNEDOUT;
     private final ServerFacade server;
     private String user = "";
-
     private SQLGameDAO gameDAO = new SQLGameDAO();
     private ChessGame.TeamColor color;
-
     private String authToken;
     private int gameID;
     private final String url;
@@ -39,7 +34,6 @@ public class ChessClient {
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-
             return switch (cmd) {
                 case "login" -> login(params);
                 case "register" -> register(params);
@@ -56,12 +50,10 @@ public class ChessClient {
                 case "quit" -> "quit";
                 case null, default -> help();
             };
-
         } catch (DataAccessException ex) {
             return ex.getMessage();
         }
     }
-
     public String login(String... params) throws DataAccessException{
         if(params.length == 2 && state == State.SIGNEDOUT){
             LoginRequest loginRequest = new LoginRequest(params[0],params[1]);
@@ -181,15 +173,10 @@ public class ChessClient {
                 state = State.INGAME;
                 return String.format("You joined game %s as an observer.", gameNum);
             }
-            else{
-                throw new DataAccessException("Not logged in");
-            }
+            else{throw new DataAccessException("Not logged in");}
         }
-        else{
-            throw new DataAccessException("Wrong number of parameters");
-        }
+        else{throw new DataAccessException("Wrong number of parameters");}
     }
-
     public String redrawBoard(String... params) throws DataAccessException {
         if(params.length == 0){
             GameData gameData = gameDAO.getGame(gameID);
@@ -197,7 +184,6 @@ public class ChessClient {
         }
         return "";
     }
-
     public String makeMove(String... params) throws DataAccessException {
         if((params.length == 2) || (params.length == 3)){
             if(state == State.INGAME) {
@@ -209,7 +195,6 @@ public class ChessClient {
                     promotion = params[2];
                     promotionPiece = findPiece(promotion);
                 }
-
                 int startCol = findCol(start.charAt(0));
                 int startRow = start.charAt(1) - '0';
                 int endCol = findCol(end.charAt(0));
@@ -223,13 +208,9 @@ public class ChessClient {
                 state = State.INGAME;
                 return "";
             }
-            else{
-                throw new DataAccessException("Not logged in");
-            }
+            else{throw new DataAccessException("Not logged in");}
         }
-        else{
-            throw new DataAccessException("Wrong number of parameters");
-        }
+        else{throw new DataAccessException("Wrong number of parameters");}
     }
 
     private ChessPiece.PieceType findPiece(String piece){
@@ -264,13 +245,9 @@ public class ChessClient {
                 state = State.SIGNEDIN;
                 return "You left the game.";
             }
-            else{
-                throw new DataAccessException("Not logged in");
-            }
+            else{throw new DataAccessException("Not logged in");}
         }
-        else{
-            throw new DataAccessException("Wrong number of parameters");
-        }
+        else{throw new DataAccessException("Wrong number of parameters");}
     }
     public String resign(String... params) throws DataAccessException{
         if(params.length == 0){
@@ -291,13 +268,9 @@ public class ChessClient {
                     return "";
                 }
             }
-            else{
-                throw new DataAccessException("Not logged in");
-            }
+            else{throw new DataAccessException("Not logged in");}
         }
-        else{
-            throw new DataAccessException("Wrong number of parameters");
-        }
+        else{throw new DataAccessException("Wrong number of parameters");}
     }
     public String highlightLegalMoves(String... params) throws DataAccessException{
         if(params.length == 1) {
@@ -400,7 +373,6 @@ public class ChessClient {
             }
             System.out.println(EscapeSequences.RESET_BG_COLOR);
         }
-
         System.out.print(SET_TEXT_COLOR_WHITE + SET_BG_COLOR_DARK_GREY + RESET_TEXT_BOLD_FAINT);
     }
 
@@ -504,44 +476,20 @@ public class ChessClient {
         }
         ChessPiece.PieceType pieceType = piece.getPieceType();
         if(piece.getTeamColor() == ChessGame.TeamColor.WHITE){
-            if(pieceType == ChessPiece.PieceType.PAWN){
-                return WHITE_PAWN;
-            }
-            if(pieceType == ChessPiece.PieceType.ROOK){
-                return WHITE_ROOK;
-            }
-            if(pieceType == ChessPiece.PieceType.KNIGHT){
-                return WHITE_KNIGHT;
-            }
-            if(pieceType == ChessPiece.PieceType.BISHOP){
-                return WHITE_BISHOP;
-            }
-            if(pieceType == ChessPiece.PieceType.KING){
-                return WHITE_KING;
-            }
-            if(pieceType == ChessPiece.PieceType.QUEEN){
-                return WHITE_QUEEN;
-            }
+            if(pieceType == ChessPiece.PieceType.PAWN){return WHITE_PAWN;}
+            if(pieceType == ChessPiece.PieceType.ROOK){return WHITE_ROOK;}
+            if(pieceType == ChessPiece.PieceType.KNIGHT){return WHITE_KNIGHT;}
+            if(pieceType == ChessPiece.PieceType.BISHOP){return WHITE_BISHOP;}
+            if(pieceType == ChessPiece.PieceType.KING){return WHITE_KING;}
+            if(pieceType == ChessPiece.PieceType.QUEEN){return WHITE_QUEEN;}
         }
         else if(piece.getTeamColor() == ChessGame.TeamColor.BLACK){
-            if(pieceType == ChessPiece.PieceType.ROOK){
-                return BLACK_ROOK;
-            }
-            if(pieceType == ChessPiece.PieceType.PAWN){
-                return BLACK_PAWN;
-            }
-            if(pieceType == ChessPiece.PieceType.BISHOP){
-                return BLACK_BISHOP;
-            }
-            if(pieceType == ChessPiece.PieceType.KNIGHT){
-                return BLACK_KNIGHT;
-            }
-            if(pieceType == ChessPiece.PieceType.KING){
-                return BLACK_KING;
-            }
-            if(pieceType == ChessPiece.PieceType.QUEEN){
-                return BLACK_QUEEN;
-            }
+            if(pieceType == ChessPiece.PieceType.ROOK){return BLACK_ROOK;}
+            if(pieceType == ChessPiece.PieceType.PAWN){return BLACK_PAWN;}
+            if(pieceType == ChessPiece.PieceType.BISHOP){return BLACK_BISHOP;}
+            if(pieceType == ChessPiece.PieceType.KNIGHT){return BLACK_KNIGHT;}
+            if(pieceType == ChessPiece.PieceType.KING){return BLACK_KING;}
+            if(pieceType == ChessPiece.PieceType.QUEEN){return BLACK_QUEEN;}
         }
         return EMPTY;
     }
