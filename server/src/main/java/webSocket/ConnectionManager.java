@@ -48,21 +48,43 @@ public class ConnectionManager {
     }
 
     public void broadcast(String excludeUserName, ServerMessage notification) throws IOException {
-        var removeList = new ArrayList<Connection>();
+        var removeList = new ArrayList<String>();
         String json = new Gson().toJson(notification);
-        for (var c : connections.values()) {
+        for (Map.Entry<String,Connection> entry: connections.entrySet()){
+            var c = entry.getValue();
+            String key = entry.getKey();
             if (c.session.isOpen()) {
                 if (!c.userName.equals(excludeUserName)) {
                     c.send(json);
                 }
             } else {
-                removeList.add(c);
+                removeList.add(key);
             }
         }
 
         // Clean up any connections that were left open.
         for (var c : removeList) {
-            connections.remove(c.userName);
+            connections.remove(c);
+        }
+    }
+    public void broadcastSolo(String userName, ServerMessage notification) throws IOException {
+        var removeList = new ArrayList<String>();
+        String json = new Gson().toJson(notification);
+        for (Map.Entry<String,Connection> entry: connections.entrySet()){
+            var c = entry.getValue();
+            String key = entry.getKey();
+            if (c.session.isOpen()) {
+                if (c.userName.equals(userName)) {
+                    c.send(json);
+                }
+            } else {
+                removeList.add(key);
+            }
+        }
+
+        // Clean up any connections that were left open.
+        for (var c : removeList) {
+            connections.remove(c);
         }
     }
 

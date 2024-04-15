@@ -157,9 +157,11 @@ public class WebSocketHandler {
             return;
         }
 
-
         GameData game = gameDAO.getGame(gameID);
         ChessGame implementation = game.implementation();
+
+        ConnectionManager inGame = new ConnectionManager();
+        inGame.setMap(inGame.findInGame(gameID, connections.getMap()));
 
         String otherUserName = null;
         ChessGame.TeamColor otherColor = null;
@@ -173,23 +175,20 @@ public class WebSocketHandler {
             otherUserName = game.whiteUsername();
         }
         if(!Objects.equals(color, game.implementation().getTeamTurn())){
-            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token"));
-            var connection = new Connection(userName,gameID,session);
-            connection.send(error);
+            Error error = new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Auth Token");
+            inGame.broadcastSolo(userName,error);
             return;
         }
         if(game.implementation().isGameOver()){
-            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Game is Over"));
-            var connection = new Connection(userName,gameID,session);
-            connection.send(error);
+            Error error = new Error(ServerMessage.ServerMessageType.ERROR, "Error: Game is Over");
+            inGame.broadcastSolo(userName,error);
             return;
         }
 
         try{implementation.makeMove(move);}
         catch (InvalidMoveException e) {
-            String error = new Gson().toJson(new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Move. Why dont you learn the rules of chess before you hop on here buddy."));
-            var connection = new Connection(userName,gameID,session);
-            connection.send(error);
+            Error error = new Error(ServerMessage.ServerMessageType.ERROR, "Error: Invalid Move. Why dont you learn the rules of chess before you hop on here buddy.");
+            inGame.broadcastSolo(userName,error);
             return;
         }
 
@@ -202,8 +201,6 @@ public class WebSocketHandler {
         ChessPiece piece = board.getPiece(end);
         String blackUsername = game.blackUsername();
 
-        ConnectionManager inGame = new ConnectionManager();
-        inGame.setMap(inGame.findInGame(gameID, connections.getMap()));
 
         var message = String.format("%s has moved %s from %s%s to %s%s", userName, piece.getPieceType(),startCol,start.getRow(),endCol,end.getRow());
 
@@ -215,9 +212,7 @@ public class WebSocketHandler {
         var loadGameBlack = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME,game);
 
         loadGameBlack.setColor((ChessGame.TeamColor.BLACK));
-        Connection connection = connections.findConnection(blackUsername);
-        String newMessage = new Gson().toJson(loadGameBlack);
-        connection.send(newMessage);
+        inGame.broadcastSolo(blackUsername,loadGameBlack);
 
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.addMessage(message);
@@ -259,10 +254,12 @@ public class WebSocketHandler {
     private void resign(Session session, ResignCommand resignCommand) throws IOException, DataAccessException {
         String username = authDAO.getUser(resignCommand.authToken);
         GameData game = gameDAO.getGame(resignCommand.getGameID());
+        ConnectionManager inGame = new ConnectionManager();
+        inGame.setMap(inGame.findInGame(resignCommand.getGameID(), connections.getMap()));
+
         if(game.implementation().isGameOver()){
-            Connection connection = connections.findConnection(username);
             var error = new Error(ServerMessage.ServerMessageType.ERROR,"Error: Game is Already Over");
-            connection.send(new Gson().toJson(error));
+            inGame.broadcastSolo(username,error);
             return;
         }
 
@@ -270,17 +267,14 @@ public class WebSocketHandler {
             var message = String.format("%s resigned the game", username);
             var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
             notification.addMessage(message);
-            ConnectionManager inGame = new ConnectionManager();
-            inGame.setMap(inGame.findInGame(resignCommand.getGameID(), connections.getMap()));
             inGame.broadcast(null, notification);
 
             game.implementation().setGameOver();
             gameDAO.updateGame(resignCommand.getGameID(), game.implementation());
         }
         else{
-            Connection connection = connections.findConnection(username);
             var error = new Error(ServerMessage.ServerMessageType.ERROR,"Error: Observer Can't Resign");
-            connection.send(new Gson().toJson(error));
+            inGame.broadcastSolo(username,error);
         }
     }
 
